@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>ULPF — Universal Log Pre-processing Framework</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg: #0a0e1a;
+    --surface: #111827;
+    --surface2: #1a2235;
+    --border: rgba(99,179,237,0.15);
+    --accent: #38bdf8;
+    --accent2: #818cf8;
+    --green: #34d399;
+    --red: #f87171;
+    --yellow: #fbbf24;
+    --text: #e2e8f0;
+    --muted: #64748b;
+    --glow: rgba(56,189,248,0.12);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── Background grid ── */
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image:
+      linear-gradient(rgba(56,189,248,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(56,189,248,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ── Header ── */
+  header {
+    position: relative; z-index: 10;
+    background: rgba(17,24,39,0.95);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 2rem;
+    display: flex; align-items: center; gap: 1.5rem;
+    height: 64px;
+  }
+  .logo {
+    display: flex; align-items: center; gap: 0.75rem;
+  }
+  .logo-icon {
+    width: 36px; height: 36px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.1rem; font-weight: 700; color: #fff;
+    box-shadow: 0 0 20px rgba(56,189,248,0.4);
+  }
+  .logo-text { font-size: 1rem; font-weight: 600; }
+  .logo-sub { font-size: 0.72rem; color: var(--muted); font-weight: 400; }
+  .badge {
+    background: rgba(56,189,248,0.12);
+    border: 1px solid rgba(56,189,248,0.3);
+    color: var(--accent);
+    font-size: 0.7rem; font-weight: 600;
+    padding: 2px 8px; border-radius: 20px;
+    letter-spacing: 0.05em;
+  }
+  .header-stats {
+    margin-left: auto;
+    display: flex; gap: 1.5rem; align-items: center;
+  }
+  .hstat { text-align: right; }
+  .hstat-val { font-size: 1.1rem; font-weight: 700; color: var(--accent); }
+  .hstat-label { font-size: 0.68rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.07em; }
+
+  /* ── Main layout ── */
+  .main { position: relative; z-index: 1; display: grid; grid-template-columns: 420px 1fr; gap: 0; height: calc(100vh - 64px); }
+
+  /* ── Left panel ── */
+  .left {
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    display: flex; flex-direction: column;
+    overflow: hidden;
+  }
+  .panel-header {
+    padding: 1.25rem 1.5rem 1rem;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .panel-title { font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); }
+
+  /* ── Format selector ── */
+  .format-bar {
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+    display: flex; flex-direction: column; gap: 0.5rem;
+  }
+  .format-label { font-size: 0.72rem; color: var(--muted); font-weight: 500; }
+  .format-pills { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+  .pill {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    font-size: 0.7rem; font-weight: 600;
+    padding: 3px 10px; border-radius: 20px;
+    cursor: pointer; transition: all 0.15s;
+    text-transform: uppercase; letter-spacing: 0.06em;
+    user-select: none;
+  }
+  .pill:hover { border-color: var(--accent); color: var(--accent); }
+  .pill.active { background: rgba(56,189,248,0.15); border-color: var(--accent); color: var(--accent); }
+
+  /* ── Text area ── */
+  .input-area {
+    flex: 1; padding: 0;
+    position: relative; overflow: hidden;
+    display: flex; flex-direction: column;
+  }
+  .input-area textarea {
+    flex: 1;
+    width: 100%; height: 100%;
+    background: transparent;
+    border: none; outline: none; resize: none;
+    color: #94a3b8;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem; line-height: 1.7;
+    padding: 1.25rem 1.5rem;
+    caret-color: var(--accent);
+  }
+  .input-area textarea::placeholder { color: #374151; }
+
+  /* ── Sample buttons ── */
+  .samples {
+    padding: 1rem 1.5rem;
+    border-top: 1px solid var(--border);
+    display: flex; flex-direction: column; gap: 0.5rem;
+  }
+  .samples-label { font-size: 0.68rem; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; }
+  .samples-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.4rem; }
+  .sample-btn {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: #94a3b8; font-size: 0.7rem;
+    padding: 5px 10px; border-radius: 6px;
+    cursor: pointer; text-align: left;
+    transition: all 0.15s; font-family: 'JetBrains Mono', monospace;
+  }
+  .sample-btn:hover { border-color: var(--accent2); color: var(--accent2); }
+
+  /* ── Action bar ── */
+  .action-bar {
+    padding: 1rem 1.5rem;
+    border-top: 1px solid var(--border);
+    display: flex; gap: 0.75rem; align-items: center;
+  }
+  .btn-run {
+    flex: 1;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border: none; color: #fff;
+    font-size: 0.85rem; font-weight: 600;
+    padding: 10px 24px; border-radius: 8px;
+    cursor: pointer; transition: all 0.2s;
+    letter-spacing: 0.03em;
+    position: relative; overflow: hidden;
+  }
+  .btn-run:hover { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(56,189,248,0.3); }
+  .btn-run:active { transform: translateY(0); }
+  .btn-run.loading::after {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(90deg, transparent 25%, rgba(255,255,255,0.15) 50%, transparent 75%);
+    background-size: 200% 100%;
+    animation: shimmer 0.8s infinite;
+  }
+  @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+  .btn-upload {
+    background: var(--surface2); border: 1px solid var(--border);
+    color: var(--muted); font-size: 0.82rem; font-weight: 500;
+    padding: 10px 16px; border-radius: 8px; cursor: pointer;
+    transition: all 0.15s; white-space: nowrap;
+  }
+  .btn-upload:hover { border-color: var(--accent); color: var(--accent); }
+  input[type="file"] { display: none; }
+
+  /* ── Right panel ── */
+  .right {
+    display: flex; flex-direction: column;
+    overflow: hidden; background: var(--bg);
+  }
+
+  /* ── Stats bar ── */
+  .stats-bar {
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+    display: flex; gap: 1.5rem; align-items: center;
+    flex-shrink: 0;
+  }
+  .stat-card {
+    display: flex; flex-direction: column; gap: 2px;
+    min-width: 80px;
+  }
+  .stat-val { font-size: 1.3rem; font-weight: 700; line-height: 1; }
+  .stat-val.green { color: var(--green); }
+  .stat-val.red { color: var(--red); }
+  .stat-val.blue { color: var(--accent); }
+  .stat-val.purple { color: var(--accent2); }
+  .stat-label { font-size: 0.65rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; }
+  .format-tag {
+    margin-left: auto;
+    display: flex; align-items: center; gap: 0.5rem;
+  }
+  .format-tag-label { font-size: 0.68rem; color: var(--muted); }
+  .format-tag-value {
+    background: rgba(129,140,248,0.15);
+    border: 1px solid rgba(129,140,248,0.3);
+    color: var(--accent2);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem; font-weight: 600;
+    padding: 3px 10px; border-radius: 6px;
+  }
+
+  /* ── Events table ── */
+  .events-container {
+    flex: 1; overflow-y: auto;
+    padding: 1rem 1.5rem;
+  }
+  .events-container::-webkit-scrollbar { width: 4px; }
+  .events-container::-webkit-scrollbar-track { background: transparent; }
+  .events-container::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  .empty-state {
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    height: 100%; gap: 1rem; color: var(--muted);
+  }
+  .empty-icon { font-size: 3rem; opacity: 0.3; }
+  .empty-text { font-size: 0.9rem; }
+  .empty-sub { font-size: 0.75rem; opacity: 0.6; }
+
+  /* ── Event card ── */
+  .event-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px; margin-bottom: 0.75rem;
+    overflow: hidden; transition: border-color 0.15s;
+  }
+  .event-card:hover { border-color: rgba(99,179,237,0.35); }
+  .event-card.error-card { border-color: rgba(248,113,113,0.25); }
+  .event-header {
+    padding: 0.75rem 1rem;
+    display: flex; align-items: center; gap: 0.75rem;
+    cursor: pointer; user-select: none;
+    background: var(--surface2);
+  }
+  .event-num {
+    font-size: 0.65rem; color: var(--muted);
+    font-family: 'JetBrains Mono', monospace;
+    min-width: 2rem;
+  }
+  .event-raw {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.68rem; color: #64748b;
+    flex: 1; overflow: hidden;
+    white-space: nowrap; text-overflow: ellipsis;
+  }
+  .event-status {
+    font-size: 0.65rem; font-weight: 700;
+    padding: 2px 8px; border-radius: 20px;
+    white-space: nowrap;
+  }
+  .status-ok { background: rgba(52,211,153,0.15); color: var(--green); }
+  .status-err { background: rgba(248,113,113,0.15); color: var(--red); }
+  .event-body {
+    padding: 0.75rem 1rem;
+    display: none;
+  }
+  .event-body.open { display: block; }
+  .fields-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 0.5rem;
+  }
+  .field-item {
+    background: var(--bg);
+    border: 1px solid rgba(255,255,255,0.05);
+    border-radius: 6px; padding: 0.5rem 0.75rem;
+  }
+  .field-name {
+    font-size: 0.62rem; color: var(--accent2);
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 500; margin-bottom: 2px;
+  }
+  .field-value {
+    font-size: 0.72rem; color: var(--text);
+    font-family: 'JetBrains Mono', monospace;
+    word-break: break-all; line-height: 1.4;
+  }
+  .field-item.ip .field-value { color: var(--accent); }
+  .field-item.label .field-value { color: var(--green); }
+  .field-item.label.attack .field-value { color: var(--red); }
+  .field-item.hash .field-value { color: var(--muted); font-size: 0.62rem; }
+
+  /* ── Error display ── */
+  .error-msg { color: var(--red); font-size: 0.75rem; padding: 0.5rem; }
+
+  /* ── Glow animation on process ── */
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+  .event-card { animation: fadeIn 0.15s ease-out; }
+
+  /* ── Toast ── */
+  .toast {
+    position: fixed; bottom: 1.5rem; right: 1.5rem;
+    background: var(--surface); border: 1px solid var(--border);
+    padding: 0.75rem 1.25rem; border-radius: 8px;
+    font-size: 0.8rem; color: var(--text);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+    z-index: 1000; transition: all 0.3s;
+    transform: translateY(100px); opacity: 0;
+  }
+  .toast.show { transform: translateY(0); opacity: 1; }
+
+  /* scrollbar */
+  html { scrollbar-color: #1e293b #0a0e1a; }
+</style>
+</head>
+<body>
+
+<!-- ── Header ─────────────────────────────────────────────── -->
+<header>
+  <div class="logo">
+    <div class="logo-icon">U</div>
+    <div>
+      <div class="logo-text">ULPF</div>
+      <div class="logo-sub">Universal Log Pre-processing Framework</div>
+    </div>
+  </div>
+  <span class="badge">v1.0</span>
+  <div class="header-stats">
+    <div class="hstat">
+      <div class="hstat-val" id="h-parsers">7</div>
+      <div class="hstat-label">Parsers</div>
+    </div>
+    <div class="hstat">
+      <div class="hstat-val" id="h-processed" style="color:var(--green)">0</div>
+      <div class="hstat-label">Processed</div>
+    </div>
+  </div>
+</header>
+
+<!-- ── Main ───────────────────────────────────────────────── -->
+<div class="main">
+
+  <!-- Left panel -->
+  <div class="left">
+    <div class="panel-header">
+      <span class="panel-title">Log Input</span>
+    </div>
+
+    <!-- Format selector -->
+    <div class="format-bar">
+      <div class="format-label">Parser</div>
+      <div class="format-pills" id="format-pills">
+        <div class="pill active" data-fmt="auto">Auto</div>
+      </div>
+    </div>
+
+    <!-- Text input -->
+    <div class="input-area">
+      <textarea id="log-input" placeholder="Paste any raw log lines here…
+
+Examples:
+  CEF:0|Cisco|ASA|9.14|106023|Deny TCP|6|src=192.168.1.5
+  &lt;134&gt;Jan  8 12:34:56 fw01 ASA: Deny tcp src 10.0.0.1
+  01/08-12:34:56 [**] [1:2100498:7] ICMP PING [**] {ICMP} 1.2.3.4 -&gt; 5.6.7.8
+  LEEF:1.0|Cisco|ASA|9.14|event|src=10.0.0.1	dst=8.8.8.8
+  {&quot;src_ip&quot;:&quot;192.168.1.5&quot;,&quot;action&quot;:&quot;deny&quot;}"></textarea>
+    </div>
+
+    <!-- Samples -->
+    <div class="samples">
+      <div class="samples-label">Quick Samples</div>
+      <div class="samples-grid">
+        <button class="sample-btn" onclick="loadSample('cef')">📋 CEF (Cisco/Palo Alto)</button>
+        <button class="sample-btn" onclick="loadSample('syslog')">🖥 Syslog (RFC 3164)</button>
+        <button class="sample-btn" onclick="loadSample('snort')">🛡 Snort/Suricata</button>
+        <button class="sample-btn" onclick="loadSample('leef')">🔷 LEEF (QRadar)</button>
+        <button class="sample-btn" onclick="loadSample('json')">{ } Generic JSON</button>
+        <button class="sample-btn" onclick="loadSample('mixed')">🔀 Mixed formats</button>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="action-bar">
+      <button class="btn-run" id="run-btn" onclick="process()">▶ Analyze Logs</button>
+      <label class="btn-upload">
+        📂 Upload File
+        <input type="file" id="file-input" accept=".log,.txt,.cef,.jsonl" onchange="uploadFile(this)"/>
+      </label>
+    </div>
+  </div>
+
+  <!-- Right panel -->
+  <div class="right">
+    <!-- Stats bar -->
+    <div class="stats-bar">
+      <div class="stat-card">
+        <div class="stat-val blue" id="s-total">—</div>
+        <div class="stat-label">Lines</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-val green" id="s-ok">—</div>
+        <div class="stat-label">Parsed OK</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-val red" id="s-err">—</div>
+        <div class="stat-label">Errors</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-val purple" id="s-rate">—</div>
+        <div class="stat-label">Success</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-val" id="s-eps">—</div>
+        <div class="stat-label">Events/sec</div>
+      </div>
+      <div class="format-tag">
+        <span class="format-tag-label">Detected format</span>
+        <span class="format-tag-value" id="s-format">—</span>
+      </div>
+    </div>
+
+    <!-- Events list -->
+    <div class="events-container" id="events-container">
+      <div class="empty-state" id="empty-state">
+        <div class="empty-icon">📡</div>
+        <div class="empty-text">Paste log lines and click Analyze</div>
+        <div class="empty-sub">Supports Syslog · CEF · LEEF · Snort · JSON · CSV — auto-detected</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── Sample data ───────────────────────────────────────────────────────────────
+const SAMPLES = {
+  cef: `CEF:0|Cisco|ASA|9.14|106023|Deny TCP|6|src=192.168.1.5 spt=44231 dst=10.0.0.1 dpt=443 proto=TCP act=Deny
+CEF:0|Palo Alto Networks|PAN-OS|10.1|threat|Threat Detected|8|src=10.0.0.5 spt=54321 dst=203.0.113.1 dpt=80 proto=TCP act=block request=/admin/login.php requestMethod=POST
+CEF:0|Check Point|Firewall|R81|Accept|Connection Accepted|2|src=192.168.10.5 spt=32456 dst=8.8.8.8 dpt=53 proto=UDP act=Accept
+CEF:0|Fortinet|FortiGate|7.2|00013|traffic forward deny|6|src=172.16.1.100 spt=44500 dst=192.0.2.55 dpt=8443 proto=TCP act=Deny suser=jsmith`,
+
+  syslog: `<134>Jan  8 12:34:56 fw01 ASA-3-106023: Deny tcp src outside:192.168.1.5/44231 dst inside:10.0.0.1/443 by access-group "outside_access_in"
+<30>Jan 15 08:22:10 pfsense filterlog: 5,,,em0,match,pass,in,4,192.168.1.100,10.0.0.50,55432,80
+<134>1 2024-01-08T12:34:56.000Z pa-fw-01 firewall - TRAFFIC - src=192.168.2.10 dst=8.8.8.8 spt=54321 dpt=53 proto=UDP action=allow
+<134>1 2024-01-08T12:00:00Z router01 firewall - - - src=172.16.0.5 dst=192.0.2.1 spt=1234 dpt=8080 proto=TCP action=DENY`,
+
+  snort: `01/08-12:34:56.123456  [**] [1:2100498:7] ICMP PING [**] [Classification: Misc activity] [Priority: 3] {ICMP} 192.168.1.5 -> 10.0.0.1
+01/08-12:35:01.654321  [**] [1:2001219:20] ET SCAN Potential SSH Scan [**] [Classification: Attempted Information Leak] [Priority: 2] {TCP} 10.5.5.100:44321 -> 192.168.1.1:22
+01/08/2024-12:36:00.000000  [Drop] [**] [1:2019284:3] ET POLICY Suspicious Outbound User-Agent (gobuster) [**] [Classification: Network Trojan Detected] [Priority: 1] {TCP} 192.168.1.200:43210 -> 8.8.8.8:80
+01/08-12:37:15.999999  [**] [1:2006546:7] ET EXPLOIT SQL Injection Attempt [**] [Classification: Web Application Attack] [Priority: 1] {TCP} 45.33.32.156:12345 -> 10.0.0.50:443`,
+
+  leef: `LEEF:1.0|Cisco|ASA|9.14|106023|src=192.168.1.5\tspt=44231\tdst=10.0.0.1\tdpt=443\tproto=TCP\taction=deny\tsev=7
+LEEF:1.0|Palo Alto Networks|PAN-OS|10.1|threat|src=10.0.0.5\tspt=54321\tdst=203.0.113.1\tdpt=80\tproto=TCP\taction=block\tcat=threat\tsev=8
+LEEF:2.0|IBM|QRadar|7.5|5000|delimiter=\\t|src=172.16.1.100\tspt=33456\tdst=8.8.8.8\tdpt=53\tproto=UDP\taction=allow\tsev=2`,
+
+  json: `{"timestamp":"2024-01-08T12:34:56Z","src_ip":"192.168.1.5","dst_ip":"10.0.0.1","src_port":44231,"dst_port":443,"protocol":"tcp","action":"deny","severity":"high"}
+{"timestamp":"2024-01-08T12:35:00Z","src_ip":"10.5.5.100","dst_ip":"192.168.1.1","src_port":55432,"dst_port":22,"protocol":"tcp","action":"allow","user_agent":"gobuster/3.1.0"}
+{"timestamp":"2024-01-08T12:35:22Z","src_ip":"203.0.113.5","dst_ip":"10.0.0.50","src_port":55123,"dst_port":80,"protocol":"tcp","action":"alert","threat":"SQL Injection"}`,
+
+  mixed: `CEF:0|Cisco|ASA|9.14|106023|Deny TCP|6|src=10.1.1.5 dst=8.8.8.8 act=Deny
+<134>Jan  8 12:34:56 fw01 ASA: Deny tcp src outside:10.0.0.1/443 dst inside:192.168.1.1/80
+01/08-12:34:56.123456  [**] [1:2100498:7] ICMP PING [**] [Priority: 3] {ICMP} 192.168.1.5 -> 10.0.0.1
+LEEF:1.0|IBM|QRadar|7.5|event|src=10.0.0.5\tdst=8.8.8.8\taction=allow`
+};
+
+// ── State ─────────────────────────────────────────────────────────────────────
+let selectedFormat = 'auto';
+let totalProcessed = 0;
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+async function init() {
+  const res = await fetch('/api/parsers');
+  const data = await res.json();
+  document.getElementById('h-parsers').textContent = data.parsers.length;
+
+  const container = document.getElementById('format-pills');
+  data.parsers.forEach(p => {
+    const pill = document.createElement('div');
+    pill.className = 'pill';
+    pill.dataset.fmt = p.name;
+    pill.textContent = p.name.toUpperCase();
+    pill.title = p.description;
+    pill.onclick = () => selectFormat(p.name, pill);
+    container.appendChild(pill);
+  });
+}
+
+function selectFormat(fmt, el) {
+  selectedFormat = fmt;
+  document.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
+  el.classList.add('active');
+}
+
+function loadSample(type) {
+  document.getElementById('log-input').value = SAMPLES[type] || '';
+
+  // Auto-select matching format pill
+  const fmtMap = { cef:'cef', syslog:'syslog', snort:'snort_alert', leef:'leef', json:'json', mixed:'auto' };
+  const fmt = fmtMap[type] || 'auto';
+  const pill = document.querySelector(`.pill[data-fmt="${fmt}"]`);
+  if (pill) selectFormat(fmt, pill);
+}
+
+// ── Main process ───────────────────────────────────────────────────────────────
+async function process() {
+  const raw = document.getElementById('log-input').value.trim();
+  if (!raw) { showToast('⚠ Paste some log lines first'); return; }
+
+  const btn = document.getElementById('run-btn');
+  btn.classList.add('loading');
+  btn.textContent = '⏳ Processing…';
+
+  try {
+    const res = await fetch('/api/process', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ lines: raw, format: selectedFormat }),
+    });
+    const data = await res.json();
+    if (!res.ok) { showToast('❌ ' + (data.error || 'Error')); return; }
+    renderResults(data);
+  } catch (e) {
+    showToast('❌ Network error: ' + e.message);
+  } finally {
+    btn.classList.remove('loading');
+    btn.textContent = '▶ Analyze Logs';
+  }
+}
+
+function renderResults(data) {
+  const { stats, events, format_detected, severity_counts } = data;
+
+  // Update stats bar
+  document.getElementById('s-total').textContent = stats.total_lines;
+  document.getElementById('s-ok').textContent = stats.parsed_ok;
+  document.getElementById('s-err').textContent = stats.parse_errors;
+  document.getElementById('s-rate').textContent = stats.success_rate + '%';
+  document.getElementById('s-eps').textContent = stats.events_per_sec.toLocaleString();
+  document.getElementById('s-format').textContent = format_detected;
+
+  // Update header counter
+  totalProcessed += stats.parsed_ok;
+  document.getElementById('h-processed').textContent = totalProcessed;
+
+  // Render events
+  const container = document.getElementById('events-container');
+  document.getElementById('empty-state').style.display = 'none';
+
+  // Clear previous
+  container.querySelectorAll('.event-card').forEach(el => el.remove());
+
+  events.forEach((ev, idx) => {
+    container.appendChild(buildEventCard(ev, idx + 1));
+  });
+
+  showToast(`✅ Parsed ${stats.parsed_ok}/${stats.total_lines} lines as ${format_detected} in ${stats.elapsed_ms}ms`);
+}
+
+function buildEventCard(ev, num) {
+  const card = document.createElement('div');
+  card.className = 'event-card' + (ev.success ? '' : ' error-card');
+
+  const header = document.createElement('div');
+  header.className = 'event-header';
+  header.innerHTML = `
+    <span class="event-num">#${String(num).padStart(3,'0')}</span>
+    <span class="event-raw">${esc(ev.raw_log || '')}</span>
+    <span class="event-status ${ev.success ? 'status-ok' : 'status-err'}">
+      ${ev.success ? '✓ OK' : '✗ ERROR'}
+    </span>`;
+
+  const body = document.createElement('div');
+  body.className = 'event-body';
+
+  if (!ev.success) {
+    body.innerHTML = `<div class="error-msg">⚠ ${esc(ev.error || 'Parse failed')}</div>`;
+  } else {
+    // Priority fields first
+    const priority = ['event_uid','record_hash','format_name','source_id',
+                      'ingest_timestamp','src_ip','dst_ip','src_port','dst_port',
+                      'protocol','severity','event_category','event_action',
+                      'threat_name','threat_signature_id','user_agent','vendor',
+                      'device_type','weak_label','label_confidence'];
+    const shown = new Set();
+    const grid = document.createElement('div');
+    grid.className = 'fields-grid';
+
+    const addField = (k, v) => {
+      if (shown.has(k) || v === null || v === undefined || v === '') return;
+      if (k === 'raw_log' || k === 'extra_fields') return;
+      shown.add(k);
+      const cls = k.includes('ip') ? 'ip' :
+                  k === 'weak_label' ? ('label ' + (v === 'attack' ? 'attack' : '')) :
+                  k === 'record_hash' || k === 'event_uid' ? 'hash' : '';
+      const item = document.createElement('div');
+      item.className = 'field-item ' + cls;
+      item.innerHTML = `<div class="field-name">${esc(k)}</div><div class="field-value">${esc(String(v))}</div>`;
+      grid.appendChild(item);
+    };
+
+    priority.forEach(k => { if (ev[k] !== undefined) addField(k, ev[k]); });
+    Object.entries(ev).forEach(([k,v]) => addField(k, v));
+
+    // Extra fields
+    if (ev.extra_fields && Object.keys(ev.extra_fields).length > 0) {
+      Object.entries(ev.extra_fields).forEach(([k,v]) => {
+        if (v !== null && v !== undefined) addField('extra.' + k, v);
+      });
+    }
+
+    body.appendChild(grid);
+  }
+
+  header.onclick = () => body.classList.toggle('open');
+  card.appendChild(header);
+  card.appendChild(body);
+  return card;
+}
+
+// ── File upload ───────────────────────────────────────────────────────────────
+async function uploadFile(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const form = new FormData();
+  form.append('file', file);
+  const res = await fetch('/api/upload', { method: 'POST', body: form });
+  const data = await res.json();
+  if (data.error) { showToast('❌ ' + data.error); return; }
+  document.getElementById('log-input').value = data.content;
+  showToast(`📂 Loaded: ${data.filename} (${data.content.split('\n').length} lines)`);
+}
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+function esc(str) {
+  return String(str)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;');
+}
+
+let toastTimer;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 3500);
+}
+
+// Keyboard shortcut: Ctrl+Enter to run
+document.addEventListener('keydown', e => {
+  if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') process();
+});
+
+// Init on load
+init();
+</script>
+</body>
+</html>

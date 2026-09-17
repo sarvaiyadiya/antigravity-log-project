@@ -1,0 +1,279 @@
+# Universal Event Schema — Canonical Field Definitions
+# Universal Log Pre-processing Framework (ULPF) v1.0
+#
+# This file is the machine-readable and human-readable specification of
+# all canonical fields in the Unified Event Schema (UES).
+#
+# PS requirement (c): "Normalize fields into a common event taxonomy."
+# PS requirement (e): "Plug-and-play onboarding" — new source configs
+#                     reference field names defined here.
+
+schema_version: "1.0"
+description: >
+  Universal Event Schema for ULPF. All log sources, regardless of format
+  or vendor, normalize into these canonical fields. Source-specific fields
+  that have no canonical mapping are preserved in 'extra_fields' (lossless).
+
+# ---------------------------------------------------------------------------
+# Identity & Provenance Fields  (PS req a, d)
+# ---------------------------------------------------------------------------
+fields:
+  event_uid:
+    type: string
+    required: true
+    description: >
+      ULPF-generated globally unique identifier (UUID v4).
+      Stable across reprocessing runs when combined with source_id
+      and record_hash.
+
+  record_hash:
+    type: string
+    required: true
+    pattern: "^[0-9a-f]{32}$"
+    description: >
+      First 32 hex characters of the SHA-256 hash of raw_log.
+      Provides content identity and enables deduplication.
+      Matches the existing provenance.py convention.
+
+  raw_log:
+    type: string
+    required: true
+    description: >
+      The complete, unmodified original log line as received.
+      Zero information loss — fulfils PS requirement (a).
+
+  format_name:
+    type: string
+    required: true
+    description: >
+      Name of the parser that produced this event.
+      Examples: syslog_rfc5424, cef, leef, cj_json_array, snort_alert.
+
+  source_id:
+    type: string
+    required: true
+    description: >
+      Logical identifier of the log source from the source YAML config.
+      Used for traceability and per-source analytics.
+
+  ingest_timestamp:
+    type: datetime_utc
+    required: true
+    description: >
+      UTC timestamp when ULPF ingested this event. ISO-8601 format.
+
+# ---------------------------------------------------------------------------
+# Temporal Fields
+# ---------------------------------------------------------------------------
+  timestamp_utc:
+    type: datetime_utc
+    required: false
+    description: >
+      Event time normalized to UTC. None if the source timestamp
+      cannot be reliably parsed or has no timezone information.
+
+  timestamp_raw:
+    type: string
+    required: false
+    description: >
+      The original timestamp string from the log, preserved verbatim.
+
+# ---------------------------------------------------------------------------
+# Device / Observer Fields
+# ---------------------------------------------------------------------------
+  vendor:
+    type: string
+    required: false
+    examples: ["cisco", "palo_alto", "snort", "suricata", "squid"]
+    description: >
+      Vendor or product name of the reporting device.
+
+  device_type:
+    type: enum
+    required: false
+    allowed_values:
+      - firewall
+      - ids_ips
+      - proxy
+      - router_switch
+      - vpn
+      - waf
+      - endpoint
+      - generic
+    description: >
+      Broad classification of the reporting device type.
+
+  device_hostname:
+    type: string
+    required: false
+
+  device_ip:
+    type: string
+    required: false
+
+  observer_name:
+    type: string
+    required: false
+    description: Reporting sensor or collector name.
+
+# ---------------------------------------------------------------------------
+# Network 5-Tuple Fields  (key for perimeter device logs)
+# ---------------------------------------------------------------------------
+  src_ip:
+    type: string
+    required: false
+    description: Canonical source IP address (IPv4 or IPv6).
+
+  dst_ip:
+    type: string
+    required: false
+    description: Canonical destination IP address (IPv4 or IPv6).
+
+  src_port:
+    type: integer
+    required: false
+    minimum: 0
+    maximum: 65535
+    description: Source TCP/UDP port number.
+
+  dst_port:
+    type: integer
+    required: false
+    minimum: 0
+    maximum: 65535
+    description: Destination TCP/UDP port number.
+
+  protocol:
+    type: string
+    required: false
+    examples: ["tcp", "udp", "icmp", "unknown"]
+
+# ---------------------------------------------------------------------------
+# Application / HTTP Fields
+# ---------------------------------------------------------------------------
+  http_method:
+    type: string
+    required: false
+    examples: ["GET", "POST", "PUT", "DELETE"]
+
+  http_url:
+    type: string
+    required: false
+
+  http_status:
+    type: integer
+    required: false
+    minimum: 100
+    maximum: 599
+
+  user_agent:
+    type: string
+    required: false
+
+  username:
+    type: string
+    required: false
+
+# ---------------------------------------------------------------------------
+# Threat / Classification Fields
+# ---------------------------------------------------------------------------
+  event_category:
+    type: enum
+    required: false
+    allowed_values:
+      - network
+      - authentication
+      - threat
+      - policy
+      - system
+      - unknown
+    default: unknown
+
+  event_action:
+    type: enum
+    required: false
+    allowed_values:
+      - allow
+      - deny
+      - drop
+      - alert
+      - block
+      - reset
+      - unknown
+    default: unknown
+
+  severity:
+    type: enum
+    required: false
+    allowed_values:
+      - 0   # UNKNOWN
+      - 1   # INFORMATIONAL
+      - 2   # LOW
+      - 4   # MEDIUM
+      - 6   # HIGH
+      - 8   # CRITICAL
+      - 10  # EMERGENCY
+    description: Numeric severity aligned with syslog and OCSF conventions.
+
+  severity_label:
+    type: string
+    required: false
+    description: Original vendor severity string, preserved verbatim.
+
+  threat_name:
+    type: string
+    required: false
+    description: Human-readable threat or rule name from the source device.
+
+  threat_signature_id:
+    type: string
+    required: false
+    description: Vendor signature / rule ID (e.g., Snort SID).
+
+  threat_signature_name:
+    type: string
+    required: false
+
+# ---------------------------------------------------------------------------
+# Weak Label Fields (populated by ULPF labeling engine)
+# ---------------------------------------------------------------------------
+  weak_label:
+    type: enum
+    required: false
+    allowed_values:
+      - attack
+      - benign
+      - uncertain
+    description: >
+      Confidence-aware weak label produced by the ULPF labeling engine.
+      Not ground truth. See label_confidence and evidence_codes.
+
+  label_confidence:
+    type: float
+    required: false
+    minimum: 0.0
+    maximum: 1.0
+
+  evidence_codes:
+    type: string
+    required: false
+    description: >
+      Pipe-separated list of evidence codes that contributed to the label.
+      Example: "UA_DECLARED_SCANNER|PAYLOAD_SQLI"
+
+  label_conflict:
+    type: boolean
+    required: false
+    description: >
+      True when evidence supports both attack and benign simultaneously.
+
+# ---------------------------------------------------------------------------
+# Overflow Field
+# ---------------------------------------------------------------------------
+  extra_fields:
+    type: object
+    required: false
+    description: >
+      Any source-specific fields that have no canonical mapping.
+      Ensures zero information loss (PS requirement a).
+      Contents vary by source type and format version.

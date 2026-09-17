@@ -1,0 +1,35 @@
+# Source Configuration: cj.log (existing dataset)
+# =============================================================================
+# PS requirement (e): Plug-and-play onboarding — this file is all that's
+# needed to define a new source for the ULPF pipeline.
+
+source_id: cj_log
+description: "cj.log — proprietary 8-field JSON-array web access log"
+vendor: unknown
+device_type: generic
+log_path: "data/raw/cj.log"
+parser: cj_json_array
+encoding: utf-8
+
+# Field mapping: source field names → UES canonical names
+# Note: CjJsonArrayParser already renames client_ip→src_ip, source_port→src_port,
+# and category_type→event_category internally. The mapper handles the rest.
+field_map:
+  timestamp: timestamp_raw
+  user_agent: user_agent
+  sub_key: threat_name
+  src_ip: src_ip
+  src_port: src_port
+  event_category: event_category
+
+
+# Labeling settings
+detection_rules: "configs/detection_rules.yaml"
+label_taxonomy: "configs/label_taxonomy.yaml"
+default_category: network
+default_action: unknown
+default_severity: unknown
+
+# Output settings
+output_format: json-lines
+output_path: "outputs/normalized/cj_log.jsonl"

@@ -1,0 +1,56 @@
+# Raw and generated datasets
+data/raw/*
+data/interim/*
+data/processed/*
+data/labels/*
+data/features/*
+data/aggregated/*
+data/balancing/*
+data/samples/generated/*
+outputs/*
+models/*
+
+# Keep empty directory markers
+!data/raw/.gitkeep
+!data/interim/.gitkeep
+!data/processed/.gitkeep
+!data/labels/.gitkeep
+!data/aggregated/.gitkeep
+!data/balancing/.gitkeep
+!outputs/.gitkeep
+!models/.gitkeep
+!data/features/.gitkeep
+
+# Local source/reference material
+references/source_files/
+
+# Jupyter
+.ipynb_checkpoints/
+**/.ipynb_checkpoints/
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Secrets and local configuration
+.env
+.env.*
+!.env.example
+
+# IDE and operating system
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+~$*

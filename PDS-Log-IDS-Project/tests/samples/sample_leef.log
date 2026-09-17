@@ -1,0 +1,7 @@
+# LEEF sample log — IBM QRadar Log Event Extended Format
+# Used by tests/test_parsers.py
+
+LEEF:1.0|Cisco|ASA|9.14|106023|src=192.168.1.5	spt=44231	dst=10.0.0.1	dpt=443	proto=TCP	action=deny	sev=7
+LEEF:1.0|Palo Alto Networks|PAN-OS|10.1|threat|src=10.0.0.5	spt=54321	dst=203.0.113.1	dpt=80	proto=TCP	action=block	cat=threat	sev=8
+LEEF:2.0|IBM|QRadar|7.5|5000|delimiter=\t|src=172.16.1.100	spt=33456	dst=8.8.8.8	dpt=53	proto=UDP	action=allow	sev=2
+LEEF:1.0|Juniper|SRX|21.1|RT_FLOW|src=192.168.5.10	spt=55000	dst=10.10.10.1	dpt=22	proto=TCP	action=deny	usrName=unknown

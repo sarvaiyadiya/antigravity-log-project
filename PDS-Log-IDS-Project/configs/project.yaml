@@ -1,0 +1,99 @@
+# ULPF Project Configuration
+# Universal Log Pre-processing Framework v1.0
+# =============================================================================
+
+project:
+  name: "Universal Log Pre-processing Framework"
+  short_name: "ULPF"
+  version: "1.0.0"
+  description: >
+    A framework for ingesting, parsing, normalizing, and standardizing
+    logs and events from any hardware or software system into a unified
+    analytics-ready schema for next-generation SIEM and cybersecurity.
+
+# ---------------------------------------------------------------------------
+# Paths (relative to project root)
+# ---------------------------------------------------------------------------
+paths:
+  data_raw: "data/raw"
+  data_interim: "data/interim"
+  data_processed: "data/processed"
+  data_labels: "data/labels"
+  data_features: "data/features"
+  data_balancing: "data/balancing"
+  data_aggregated: "data/aggregated"
+  outputs: "outputs"
+  sources_config: "configs/sources"
+  schema_config: "configs/schema/unified_event_schema.yaml"
+
+# ---------------------------------------------------------------------------
+# Ingestion defaults
+# ---------------------------------------------------------------------------
+ingestion:
+  default_encoding: "utf-8"
+  error_handling: "replace"        # 'replace' | 'strict' | 'ignore'
+  chunk_size: 25000                # events per processing chunk
+  auto_detect_format: true         # auto-detect if parser not specified
+  auto_detect_sample_lines: 10     # lines to sample for detection
+
+# ---------------------------------------------------------------------------
+# Schema
+# ---------------------------------------------------------------------------
+schema:
+  version: "1.0"
+  validate_on_ingest: true
+  strict_mode: false               # false = log errors, don't drop events
+
+# ---------------------------------------------------------------------------
+# Output defaults
+# ---------------------------------------------------------------------------
+output:
+  default_format: "json-lines"     # cef | json-lines | csv
+  default_directory: "outputs/normalized"
+  cef_version: 0
+  cef_vendor: "ULPF"
+  cef_product: "UniversalLogFramework"
+  cef_device_version: "1.0"
+
+# ---------------------------------------------------------------------------
+# Supported log formats (registered parsers)
+# ---------------------------------------------------------------------------
+supported_formats:
+  - name: syslog
+    description: "RFC 3164 and RFC 5424 Syslog"
+    sources: ["firewall", "ids_ips", "router_switch", "vpn"]
+  - name: cef
+    description: "ArcSight Common Event Format"
+    sources: ["firewall", "ids_ips", "waf"]
+  - name: leef
+    description: "IBM QRadar Log Event Extended Format"
+    sources: ["firewall", "ids_ips"]
+  - name: cj_json_array
+    description: "cj.log 8-field JSON array format"
+    sources: ["web_proxy"]
+  - name: json
+    description: "Generic JSON object per line"
+    sources: ["generic"]
+  - name: snort_alert
+    description: "Snort / Suricata fast alert format"
+    sources: ["ids_ips"]
+  - name: csv
+    description: "Generic comma/tab separated values"
+    sources: ["generic", "netflow"]
+
+# ---------------------------------------------------------------------------
+# Privacy settings
+# ---------------------------------------------------------------------------
+privacy:
+  pseudonymize_ips: true
+  hmac_key_env_var: "CLIENT_HMAC_KEY"    # read from environment
+  forbidden_output_fields:
+    - "client_ip"
+    - "client_ip_canonical"
+
+# ---------------------------------------------------------------------------
+# Logging
+# ---------------------------------------------------------------------------
+logging:
+  level: "INFO"                          # DEBUG | INFO | WARNING | ERROR
+  format: "[%(asctime)s] %(levelname)s — %(message)s"

@@ -1,0 +1,8 @@
+# Snort/Suricata fast alert sample log
+# Used by tests/test_parsers.py
+
+01/08-12:34:56.123456  [**] [1:2100498:7] ICMP PING [**] [Classification: Misc activity] [Priority: 3] {ICMP} 192.168.1.5 -> 10.0.0.1
+01/08-12:35:01.654321  [**] [1:2001219:20] ET SCAN Potential SSH Scan [**] [Classification: Attempted Information Leak] [Priority: 2] {TCP} 10.5.5.100:44321 -> 192.168.1.1:22
+01/08-12:35:22.000000  [**] [1:1:1] COMMUNITY WEB-MISC Attempt to access phpMyAdmin [**] [Classification: Web Application Attack] [Priority: 1] {TCP} 203.0.113.5:55123 -> 10.0.0.50:80
+01/08/2024-12:36:00.000000  [Drop] [**] [1:2019284:3] ET POLICY Suspicious Outbound User-Agent (gobuster) [**] [Classification: A Network Trojan was Detected] [Priority: 1] {TCP} 192.168.1.200:43210 -> 8.8.8.8:80
+01/08-12:37:15.999999  [**] [1:2006546:7] ET EXPLOIT SQL Injection Attempt [**] [Classification: Web Application Attack] [Priority: 1] {TCP} 45.33.32.156:12345 -> 10.0.0.50:443

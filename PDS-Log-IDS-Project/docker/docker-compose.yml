@@ -1,0 +1,79 @@
+# ============================================================================
+# ULPF — docker-compose.yml
+# Single-command startup for the Universal Log Pre-processing Framework
+#
+# Usage:
+#   docker-compose up                    # process all configured sources
+#   docker-compose run ulpf parsers      # list registered parsers
+#   docker-compose run ulpf ingest \
+#     --source configs/sources/cj_log.yaml \
+#     --output-format cef
+# ============================================================================
+
+version: "3.9"
+
+services:
+  # ---------------------------------------------------------------------------
+  # ulpf: main processing container
+  # ---------------------------------------------------------------------------
+  ulpf:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    image: ulpf:latest
+    container_name: ulpf_pipeline
+
+    # Mount log files and output directory from the host
+    volumes:
+      - ../data/raw:/app/data/raw:ro          # log files (read-only)
+      - ../outputs:/app/outputs:rw             # output directory (read-write)
+      - ../configs:/app/configs:ro             # configs (read-only)
+
+    # Environment variables
+    environment:
+      - PYTHONUNBUFFERED=1
+      - CLIENT_HMAC_KEY=${CLIENT_HMAC_KEY:-default_test_key_change_in_prod}
+
+    # Default command: ingest cj.log as JSON-Lines
+    command: >
+      ingest
+      --source configs/sources/cj_log.yaml
+      --output-format json-lines
+      --output-file outputs/normalized/cj_log.jsonl
+
+    # Resource limits (adjust for your environment)
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+          cpus: "2.0"
+        reservations:
+          memory: 512M
+
+    # Restart policy
+    restart: "no"
+
+  # ---------------------------------------------------------------------------
+  # ulpf-demo: quick demo with sample logs
+  # ---------------------------------------------------------------------------
+  ulpf-demo:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    image: ulpf:latest
+    container_name: ulpf_demo
+
+    volumes:
+      - ../tests/samples:/app/data/raw:ro
+      - ../outputs:/app/outputs:rw
+      - ../configs:/app/configs:ro
+
+    environment:
+      - PYTHONUNBUFFERED=1
+
+    # Demo: list parsers and process sample CEF logs
+    command: parsers
+
+    restart: "no"
+    profiles:
+      - demo

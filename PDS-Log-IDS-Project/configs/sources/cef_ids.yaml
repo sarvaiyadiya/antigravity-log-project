@@ -1,0 +1,40 @@
+# Source Configuration: CEF IDS/Firewall
+# =============================================================================
+# Example: Cisco Firepower, Palo Alto, Check Point, Fortinet (CEF output)
+# PS requirement (e): Plug-and-play onboarding
+
+source_id: cef_ids
+description: "CEF-formatted logs from IDS/IPS or NGFW"
+vendor: cisco_firepower    # change to specific vendor
+device_type: ids_ips
+log_path: "data/raw/ids.cef"    # update to actual log path
+parser: cef
+encoding: utf-8
+
+# CEF parser produces UES-named fields directly via _CEF_FIELD_MAP
+# Add any additional custom CEF extension field mappings here:
+field_map:
+  vendor: vendor
+  threat_signature_id: threat_signature_id
+  threat_name: threat_name
+  severity_label: severity_label
+  severity: severity
+  src_ip: src_ip
+  src_port: src_port
+  dst_ip: dst_ip
+  dst_port: dst_port
+  protocol: protocol
+  event_action: event_action
+  user_agent: user_agent
+  username: username
+  http_url: http_url
+  http_method: http_method
+  message: extra_message
+
+default_category: threat
+default_action: alert
+default_severity: medium
+
+# Output settings
+output_format: json-lines
+output_path: "outputs/normalized/cef_ids.jsonl"

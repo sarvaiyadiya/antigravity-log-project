@@ -1,0 +1,177 @@
+# ULPF Detection Rules Configuration
+# Formal YAML specification of all weak-labeling rules
+# (mirrors the logic implemented in src/labeling.py)
+# =============================================================================
+# PS requirement (b): "Extract and parse source-specific attributes"
+# PS requirement (h): "AI/ML-ready security and operational analytics"
+
+rule_set_version: "weak-label-v1"
+description: >
+  Event-local detection rules applied during the labeling stage.
+  Rules are evaluated in priority order. The first matching rule
+  determines the label. Conflict detection runs independently.
+
+# ---------------------------------------------------------------------------
+# User-Agent based rules (UA_ prefix)
+# ---------------------------------------------------------------------------
+ua_rules:
+  - rule_id: UA_DECLARED_SCANNER
+    description: >
+      User-Agent string contains a known security scanning tool name.
+      High confidence of attack intent. Note: UA strings can be spoofed.
+    label: attack
+    confidence: 0.85
+    priority: 10
+    match_field: user_agent
+    match_type: contains_any_ci
+    patterns:
+      - "gobuster"
+      - "dirbuster"
+      - "nmap scripting engine"
+      - "zgrab"
+      - "sqlmap"
+      - "nikto"
+      - "masscan"
+      - "nuclei"
+      - "wpscan"
+      - "ffuf"
+
+  - rule_id: UA_BROWSER_STYLE
+    description: >
+      User-Agent string starts with Mozilla/ or Opera/ — consistent
+      with a standard browser. Suggests benign browsing behaviour.
+      Confidence is deliberately low because UAs can be faked.
+    label: benign
+    confidence: 0.55
+    priority: 5
+    match_field: user_agent
+    match_type: starts_with_any
+    patterns:
+      - "Mozilla/"
+      - "Opera/"
+
+  - rule_id: UA_MISSING
+    description: >
+      No User-Agent present. Absence alone is not conclusive but
+      contributes to uncertainty scoring.
+    label: uncertain
+    confidence: 0.0
+    priority: 1
+    match_field: user_agent
+    match_type: is_missing
+
+# ---------------------------------------------------------------------------
+# Payload content rules (PAYLOAD_ prefix)
+# ---------------------------------------------------------------------------
+payload_rules:
+  - rule_id: PAYLOAD_SHELL
+    description: >
+      Payload contains shell command injection patterns.
+      Very high confidence of attack intent.
+    label: attack
+    confidence: 0.95
+    priority: 20
+    match_field: payload_combined
+    match_type: regex
+    pattern: >
+      (?:rm(?:_|\s)+-rf|(?:wget|curl)(?:_|\s)+[^;|&]*(?:;|%3b)(?:_|\s)*(?:sh|bash))
+
+  - rule_id: PAYLOAD_PATH_TRAVERSAL
+    description: >
+      Payload contains directory traversal sequences.
+    label: attack
+    confidence: 0.90
+    priority: 18
+    match_field: payload_combined
+    match_type: regex
+    pattern: >
+      (?:\.\./|%2e%2e(?:%2f|/))
+
+  - rule_id: PAYLOAD_SQLI
+    description: >
+      Payload contains SQL injection signatures.
+    label: attack
+    confidence: 0.95
+    priority: 19
+    match_field: payload_combined
+    match_type: regex
+    pattern: >
+      (?:union(?:_|\s)+select|(?:%27|')(?:_|\s)*(?:or|and)(?:_|\s)+\d+(?:_|\s)*=(?:_|\s)*\d+)
+
+  - rule_id: PAYLOAD_XSS
+    description: >
+      Payload contains cross-site scripting indicators.
+    label: attack
+    confidence: 0.90
+    priority: 17
+    match_field: payload_combined
+    match_type: regex
+    pattern: >
+      (?:<script|%3cscript)
+
+# ---------------------------------------------------------------------------
+# IDS/IPS signature rules (SIG_ prefix)
+# ---------------------------------------------------------------------------
+signature_rules:
+  - rule_id: SIG_IDS_ALERT
+    description: >
+      Event originated from an IDS/IPS alert (e.g., Snort, Suricata).
+      Severity mapped from IDS priority.
+    label: attack
+    confidence: 0.80
+    priority: 15
+    match_field: device_type
+    match_type: equals
+    value: ids_ips
+
+  - rule_id: SIG_FIREWALL_DENY
+    description: >
+      Firewall explicitly denied the connection.
+    label: attack
+    confidence: 0.70
+    priority: 12
+    match_field: event_action
+    match_type: equals_any
+    values: ["deny", "drop", "block"]
+
+# ---------------------------------------------------------------------------
+# Conflict detection
+# ---------------------------------------------------------------------------
+conflict_detection:
+  description: >
+    A conflict is flagged when browser-style evidence appears alongside
+    scanner or payload evidence. This indicates the event may be a false
+    positive or a sophisticated attacker mimicking normal traffic.
+  conflict_conditions:
+    - both:
+        - UA_BROWSER_STYLE
+        - UA_DECLARED_SCANNER
+    - both:
+        - UA_BROWSER_STYLE
+        - any_payload_rule
+
+# ---------------------------------------------------------------------------
+# Label combination rules
+# ---------------------------------------------------------------------------
+combination_rules:
+  - condition: UA_DECLARED_SCANNER and any_payload_rule
+    label: attack
+    confidence: 0.99
+    evidence_code: "UA_DECLARED_SCANNER+PAYLOAD"
+
+  - condition: any_payload_rule only (no scanner)
+    label: attack
+    confidence: 0.95
+
+  - condition: UA_DECLARED_SCANNER only (no payload)
+    label: attack
+    confidence: 0.85
+
+  - condition: UA_BROWSER_STYLE only (no attack evidence)
+    label: benign
+    confidence: 0.55
+
+  - condition: no_matching_evidence
+    label: uncertain
+    confidence: 0.0
+    evidence_code: "NO_MATCHING_EVIDENCE"

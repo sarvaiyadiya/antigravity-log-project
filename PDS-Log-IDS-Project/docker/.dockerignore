@@ -1,0 +1,53 @@
+# Docker ignore file — excludes unnecessary files from the build context
+# Reduces build time and image size
+
+# Data files (too large for container image — mount as volumes instead)
+data/
+outputs/
+*.log
+*.csv
+*.jsonl
+
+# Development artifacts
+.git/
+.gitignore
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.egg-info/
+.eggs/
+dist/
+build/
+*.whl
+
+# Virtual environments
+.venv/
+venv/
+env/
+.env
+
+# Notebooks and reports (not needed in production container)
+notebooks/
+reports/
+*.ipynb
+*.html
+
+# Documentation source (docs are in the image via COPY)
+*.md
+!README.md
+
+# Test files (not needed in production container)
+tests/
+
+# IDE files
+.vscode/
+.idea/
+*.code-workspace
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# References
+references/

@@ -1,0 +1,133 @@
+# ULPF Label Taxonomy
+# Defines all valid labels, their meaning, confidence ranges, and usage.
+# =============================================================================
+# PS requirement (c): "Normalize fields into a common event taxonomy"
+# PS requirement (h): "AI/ML-ready security and operational analytics"
+
+taxonomy_version: "v1"
+description: >
+  The ULPF label taxonomy defines the controlled vocabulary for
+  classifying security events. Labels are assigned by the weak-labeling
+  engine and are NOT verified ground truth. They represent the system's
+  best evidence-based assessment given available signals.
+
+# ---------------------------------------------------------------------------
+# Primary labels
+# ---------------------------------------------------------------------------
+labels:
+  attack:
+    code: "ATTACK"
+    description: >
+      The event shows evidence of malicious intent. At least one
+      attack-indicating rule matched (scanner UA, payload pattern,
+      or IDS signature). This is a weak label — not a proven fact.
+    confidence_range: [0.70, 0.99]
+    confidence_meaning: >
+      Higher confidence when multiple independent evidence sources agree
+      (e.g., declared scanner + payload pattern = 0.99).
+      Lower confidence when only one weak signal is present.
+    requires_review: false
+    block_recommended: false     # Never block on weak labels alone
+
+  benign:
+    code: "BENIGN"
+    description: >
+      The event shows no attack evidence and has browser-style indicators.
+      This does NOT prove the event is harmless — it merely indicates
+      typical browser traffic patterns. Confidence is capped at 0.55
+      because UA strings can be spoofed.
+    confidence_range: [0.50, 0.60]
+    confidence_meaning: >
+      Intentionally low: browser-style evidence is a weak positive signal
+      for benign intent, not a guarantee.
+    requires_review: false
+    block_recommended: false
+
+  uncertain:
+    code: "UNCERTAIN"
+    description: >
+      The available evidence is insufficient or contradictory to assign
+      attack or benign. The system abstains. This is correct behaviour —
+      forcing a binary label on ambiguous events would introduce noise.
+    confidence_range: [0.0, 0.0]
+    confidence_meaning: >
+      Zero confidence: the system has no reliable signal.
+    requires_review: true        # Flag for analyst review
+    block_recommended: false
+
+# ---------------------------------------------------------------------------
+# Evidence codes (building blocks of labels)
+# ---------------------------------------------------------------------------
+evidence_codes:
+  UA_DECLARED_SCANNER:
+    description: User-Agent string contains a known security tool name
+    attack_weight: high
+    spoofable: true
+    sources: ["user_agent"]
+
+  UA_BROWSER_STYLE:
+    description: User-Agent starts with Mozilla/ or Opera/
+    benign_weight: low
+    spoofable: true
+    sources: ["user_agent"]
+
+  UA_MISSING:
+    description: No User-Agent header present
+    attack_weight: low
+    benign_weight: none
+    sources: ["user_agent"]
+
+  PAYLOAD_SHELL:
+    description: Shell command injection pattern detected
+    attack_weight: very_high
+    spoofable: false
+    sources: ["category_type", "sub_key", "language", "metadata"]
+
+  PAYLOAD_PATH_TRAVERSAL:
+    description: Directory traversal sequence detected
+    attack_weight: high
+    spoofable: false
+    sources: ["category_type", "sub_key", "language", "metadata"]
+
+  PAYLOAD_SQLI:
+    description: SQL injection pattern detected
+    attack_weight: very_high
+    spoofable: false
+    sources: ["category_type", "sub_key", "language", "metadata"]
+
+  PAYLOAD_XSS:
+    description: Cross-site scripting pattern detected
+    attack_weight: high
+    spoofable: false
+    sources: ["category_type", "sub_key", "language", "metadata"]
+
+  NO_MATCHING_EVIDENCE:
+    description: No matching evidence found — abstention
+    attack_weight: none
+    benign_weight: none
+
+# ---------------------------------------------------------------------------
+# Conflict taxonomy
+# ---------------------------------------------------------------------------
+conflicts:
+  description: >
+    A conflict is recorded when evidence simultaneously supports
+    both attack and benign interpretations. Conflicts do not prevent
+    labeling but are preserved so analysts and models can see them.
+  types:
+    BROWSER_SCANNER_CONFLICT:
+      description: Browser-style UA alongside declared scanner UA
+      risk: high     # attacker mimicking normal traffic
+    BROWSER_PAYLOAD_CONFLICT:
+      description: Browser-style UA alongside attack payload patterns
+      risk: very_high  # sophisticated attack or false positive
+
+# ---------------------------------------------------------------------------
+# Label version history
+# ---------------------------------------------------------------------------
+versions:
+  - version: "weak-label-v1"
+    released: "2026-08-01"
+    changes: "Initial weak-label rules based on UA and payload patterns"
+    rules_file: "configs/detection_rules.yaml"
+    code_file: "src/labeling.py"

@@ -1,0 +1,8 @@
+# CEF sample log — ArcSight Common Event Format
+# Used by tests/test_parsers.py
+
+CEF:0|Cisco|ASA|9.14|106023|Deny TCP|6|src=192.168.1.5 spt=44231 dst=10.0.0.1 dpt=443 proto=TCP act=Deny
+CEF:0|Palo Alto Networks|PAN-OS|10.1|threat|Threat Detected|8|src=10.0.0.5 spt=54321 dst=203.0.113.1 dpt=80 proto=TCP act=block request=/admin/login.php requestMethod=POST cs1=malware cs1Label=category
+CEF:0|Check Point|Firewall|R81|Accept|Connection Accepted|2|src=192.168.10.5 spt=32456 dst=8.8.8.8 dpt=53 proto=UDP act=Accept
+CEF:0|Fortinet|FortiGate|7.2|00013|traffic forward deny|6|src=172.16.1.100 spt=44500 dst=192.0.2.55 dpt=8443 proto=TCP act=Deny suser=jsmith
+CEF:0|Snort|IDS|3.0|2100498|ICMP PING|3|src=10.5.5.5 spt=0 dst=10.0.0.1 dpt=0 proto=ICMP act=Alert msg=ICMP Ping detected

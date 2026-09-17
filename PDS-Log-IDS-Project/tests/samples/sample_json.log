@@ -1,0 +1,6 @@
+# JSON log samples — generic JSON objects
+# Used by tests/test_parsers.py
+
+{"timestamp": "2024-01-08T12:34:56Z", "src_ip": "192.168.1.5", "dst_ip": "10.0.0.1", "src_port": 44231, "dst_port": 443, "protocol": "tcp", "action": "deny", "severity": "high"}
+{"timestamp": "2024-01-08T12:35:00Z", "src_ip": "10.5.5.100", "dst_ip": "192.168.1.1", "src_port": 55432, "dst_port": 22, "protocol": "tcp", "action": "allow", "user_agent": "gobuster/3.1.0"}
+{"timestamp": "2024-01-08T12:35:22Z", "src_ip": "203.0.113.5", "dst_ip": "10.0.0.50", "src_port": 55123, "dst_port": 80, "protocol": "tcp", "action": "alert", "threat": "SQL Injection", "severity": "critical"}

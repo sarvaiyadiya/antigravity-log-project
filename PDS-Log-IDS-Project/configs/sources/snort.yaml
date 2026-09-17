@@ -1,0 +1,36 @@
+# Source Configuration: Snort / Suricata IDS
+# =============================================================================
+# PS requirement (e): Plug-and-play onboarding
+# Works with both Snort 2.x/3.x and Suricata fast.log output
+
+source_id: snort_ids
+description: "Snort or Suricata IDS/IPS fast alert log"
+vendor: snort_suricata
+device_type: ids_ips
+log_path: "data/raw/snort_alerts.log"    # update to actual log path
+parser: snort_alert
+encoding: utf-8
+
+# Snort parser produces mostly UES-named fields directly.
+# field_map overrides / additions:
+field_map:
+  src_ip: src_ip
+  src_port: src_port
+  dst_ip: dst_ip
+  dst_port: dst_port
+  protocol: protocol
+  threat_signature_id: threat_signature_id
+  threat_name: threat_name
+  severity: severity
+  severity_label: severity_label
+  action: event_action
+  timestamp_raw: timestamp_raw
+  classification: extra_classification
+
+default_category: threat
+default_action: alert
+default_severity: medium
+
+# Output settings
+output_format: cef
+output_path: "outputs/normalized/snort_alerts.cef"

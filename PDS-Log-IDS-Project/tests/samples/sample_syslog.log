@@ -1,0 +1,13 @@
+# Syslog sample log — RFC 3164 and RFC 5424 formats
+# Used by tests/test_parsers.py
+
+# RFC 3164 — Cisco ASA deny
+<134>Jan  8 12:34:56 fw01 ASA-3-106023: Deny tcp src outside:192.168.1.5/44231 dst inside:10.0.0.1/443 by access-group "outside_access_in"
+# RFC 3164 — pfSense allow
+<30>Jan 15 08:22:10 pfsense filterlog: 5,,,1000000103,em0,match,pass,in,4,0x0,,64,12345,0,DF,6,tcp,60,192.168.1.100,10.0.0.50,55432,80,0
+# RFC 5424 — Palo Alto
+<134>1 2024-01-08T12:34:56.000Z pa-fw-01 firewall - TRAFFIC - src=192.168.2.10 dst=8.8.8.8 spt=54321 dpt=53 proto=UDP action=allow
+# RFC 3164 — FortiGate deny
+<190>Jan 08 2024 12:34:56 FortiGate-100F date=2024-01-08 time=12:34:56 logid=13 type=traffic subtype=forward action=deny src=10.1.1.5 dst=203.0.113.1 srcport=44231
+# RFC 5424 — Generic firewall with key=value
+<134>1 2024-01-08T12:00:00Z router01 firewall - - - src=172.16.0.5 dst=192.0.2.1 spt=1234 dpt=8080 proto=TCP action=DENY

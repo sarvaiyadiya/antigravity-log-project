@@ -1,0 +1,33 @@
+# Source Configuration: Syslog Firewall
+# =============================================================================
+# Example: Cisco ASA / pfSense / Palo Alto syslog output
+# PS requirement (e): Plug-and-play onboarding
+
+source_id: syslog_firewall
+description: "Generic syslog from perimeter firewall (RFC 3164/5424)"
+vendor: cisco_asa          # change to: palo_alto, pfsense, fortinet, etc.
+device_type: firewall
+log_path: "data/raw/firewall.log"    # update to actual log path
+parser: syslog
+encoding: utf-8
+
+# Field mapping: syslog parser output → UES canonical names
+field_map:
+  device_hostname: device_hostname
+  syslog_severity: severity
+  message: extra_message
+  src_ip: src_ip
+  dst_ip: dst_ip
+  src_port: src_port
+  dst_port: dst_port
+  action: event_action
+  protocol: protocol
+  timestamp_raw: timestamp_raw
+
+default_category: network
+default_action: unknown
+default_severity: informational
+
+# Output settings
+output_format: cef
+output_path: "outputs/normalized/syslog_firewall.cef"
