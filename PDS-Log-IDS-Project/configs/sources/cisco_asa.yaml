@@ -1,0 +1,36 @@
+# Source Configuration: Cisco ASA Firewall
+# =============================================================================
+# Covers: Cisco ASA 5500-X series, Cisco Firepower FTD
+# Formats:  %ASA-SEVERITY-MSGID: message body
+# PS requirement (e): Plug-and-play onboarding
+
+source_id: cisco_asa
+description: "Cisco ASA / Firepower FTD native syslog (%ASA-n-NNNNNN: format)"
+vendor: cisco
+device_type: firewall
+log_path: "data/raw/cisco_asa.log"
+parser: cisco_asa
+encoding: utf-8
+
+# FieldMapper mappings: parser field name → UES canonical field name
+field_map:
+  src_ip: src_ip
+  dst_ip: dst_ip
+  src_port: src_port
+  dst_port: dst_port
+  protocol: protocol
+  event_action: event_action
+  severity: severity
+  severity_label: severity_label
+  threat_signature_id: threat_signature_id
+  threat_name: threat_name
+  device_type: device_type
+  event_category: event_category
+
+default_category: network
+default_action: unknown
+default_severity: warning
+
+# Output settings
+output_format: json-lines
+output_path: "outputs/normalized/cisco_asa.jsonl"

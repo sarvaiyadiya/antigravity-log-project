@@ -209,13 +209,16 @@ class FieldMapper:
             if ues_name:
                 coerced = self._coerce(ues_name, raw_value)
                 if ues_name in _UES_FIELDS:
-                    # Valid canonical field → add to canonical dict
+                    # Valid canonical field -> add to canonical dict
                     canonical[ues_name] = coerced
                 else:
-                    # Mapped name is not a real UES field → goes to extra_fields
+                    # Mapped name is not a real UES field -> goes to extra_fields
                     extra[ues_name] = coerced
+            elif raw_name in _UES_FIELDS:
+                # Raw field name is already a valid canonical UES field
+                canonical[raw_name] = self._coerce(raw_name, raw_value)
             else:
-                # Unmapped field → overflow
+                # Unmapped field -> overflow
                 extra[raw_name] = raw_value
 
         canonical["extra_fields"] = extra

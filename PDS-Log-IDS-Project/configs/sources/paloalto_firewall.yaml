@@ -1,0 +1,39 @@
+# Source Configuration: Palo Alto Networks NGFW
+# =============================================================================
+# Covers: PA-220, PA-820, PA-3220, PA-5220, PA-7000 series; VM-Series
+# Log types: TRAFFIC (use parser: paloalto_traffic)
+#            THREAT   (use parser: paloalto_threat)
+# PS requirement (e): Plug-and-play onboarding
+
+source_id: paloalto_firewall
+description: "Palo Alto Networks PAN-OS Traffic and Threat logs (CSV format)"
+vendor: palo_alto
+device_type: firewall
+log_path: "data/raw/paloalto_traffic.log"
+parser: paloalto_traffic      # Change to paloalto_threat for threat logs
+encoding: utf-8
+
+# FieldMapper mappings
+field_map:
+  src_ip: src_ip
+  dst_ip: dst_ip
+  src_port: src_port
+  dst_port: dst_port
+  protocol: protocol
+  event_action: event_action
+  username: username
+  threat_signature_id: threat_signature_id
+  threat_name: threat_name
+  severity: severity
+  severity_label: severity_label
+  timestamp_raw: timestamp_raw
+  event_category: event_category
+  device_type: device_type
+
+default_category: network
+default_action: unknown
+default_severity: informational
+
+# Output settings
+output_format: json-lines
+output_path: "outputs/normalized/paloalto.jsonl"

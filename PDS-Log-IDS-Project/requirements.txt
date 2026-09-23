@@ -1,0 +1,19 @@
+# =====================================================================
+# ULPF: Universal Log Pre-processing Framework
+# Pinned Production & Testing Dependencies
+# =====================================================================
+
+# Core Configuration & Parsing
+pyyaml>=6.0.0
+
+# Machine Learning & Scientific Computing
+numpy>=1.22.0
+scikit-learn>=1.1.0
+joblib>=1.2.0
+
+# Testing & Quality Assurance
+pytest>=7.0.0
+
+# Note: The live visualization server (demo/server.py), syslog listeners,
+# file watchers, and REST receivers are implemented purely in Python 3.10+
+# standard library (zero external web framework dependencies).

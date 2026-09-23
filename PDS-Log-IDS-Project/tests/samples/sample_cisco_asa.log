@@ -1,0 +1,5 @@
+%ASA-4-106023: Deny tcp src outside:203.0.113.10/54321 dst inside:10.0.0.5/443 by access-group "OUTSIDE_IN" [0x12345678, 0x0]
+%ASA-2-106001: Inbound TCP connection denied from 198.51.100.25/12345 to 10.0.0.1/22 flags SYN on interface outside
+%ASA-6-302013: Built inbound TCP connection 12345678 for outside:192.168.1.100/55000 (192.168.1.100/55000) to inside:10.0.0.10/80 (10.0.0.10/80)
+%ASA-4-106006: Deny inbound UDP from 203.0.113.50/53 to 10.0.0.2/53 on interface outside
+Jan 15 2024 10:23:45: %ASA-3-710003: TCP access denied by ACL from 45.33.32.156/48032 to outside:10.0.0.1/443

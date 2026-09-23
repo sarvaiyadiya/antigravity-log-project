@@ -1,0 +1,72 @@
+# ULPF Correlation Rules Configuration
+# Multi-event sliding time-window correlation rules for perimeter telemetry
+# =============================================================================
+# PS requirement (b): "Extract and parse source-specific attributes"
+# PS requirement (c): "Normalize extracted attributes into universal schema"
+# PS requirement (f): "Unified visibility across all log sources"
+# PS requirement (h): "AI/ML-ready security and operational analytics"
+
+version: "1.0"
+max_sliding_window_seconds: 300  # Global maximum retention for in-memory event deque
+
+rules:
+  - rule_name: "PORT_SCAN_SWEEP"
+    enabled: true
+    incident_type: "port_scan"
+    severity: "medium"
+    window_seconds: 30
+    cooldown_seconds: 60
+    min_distinct_ports: 5
+    mitre_tactic: "Discovery"
+    mitre_technique_id: "T1046"
+    mitre_technique_name: "Network Service Discovery"
+    description: "Source IP probed 5 or more distinct destination ports within 30 seconds"
+
+  - rule_name: "BRUTE_FORCE_CAMPAIGN"
+    enabled: true
+    incident_type: "brute_force"
+    severity: "high"
+    window_seconds: 60
+    cooldown_seconds: 60
+    min_failed_events: 5
+    mitre_tactic: "Credential Access"
+    mitre_technique_id: "T1110"
+    mitre_technique_name: "Brute Force"
+    description: "Source IP generated 5 or more failed logins or denied attempts within 60 seconds"
+
+  - rule_name: "CROSS_DEVICE_CAMPAIGN"
+    enabled: true
+    incident_type: "cross_device_campaign"
+    severity: "high"
+    window_seconds: 120
+    cooldown_seconds: 90
+    min_distinct_device_types: 2
+    mitre_tactic: "Initial Access"
+    mitre_technique_id: "T1190"
+    mitre_technique_name: "Exploit Public-Facing Application"
+    description: "Suspicious activity observed across 2 or more distinct perimeter device types from the same source IP"
+
+  - rule_name: "MALICIOUS_C2_BEACON"
+    enabled: true
+    incident_type: "c2_communication"
+    severity: "critical"
+    window_seconds: 180
+    cooldown_seconds: 120
+    min_malicious_events: 2
+    threat_score_threshold: 0.70
+    mitre_tactic: "Command and Control"
+    mitre_technique_id: "T1071"
+    mitre_technique_name: "Application Layer Protocol"
+    description: "Confirmed malicious IP (threat intelligence score >= 0.70) exhibited repeated communication"
+
+  - rule_name: "HIGH_SEVERITY_MULTI_VECTOR"
+    enabled: true
+    incident_type: "multi_vector_exploit"
+    severity: "critical"
+    window_seconds: 60
+    cooldown_seconds: 60
+    min_events_following_threat: 2
+    mitre_tactic: "Execution"
+    mitre_technique_id: "T1059"
+    mitre_technique_name: "Command and Scripting Interpreter"
+    description: "High/critical severity exploit followed by consecutive connection attempts within 60 seconds"

@@ -1,677 +1,1314 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>ULPF — Universal Log Pre-processing Framework</title>
-<link rel="preconnect" href="https://fonts.googleapis.com"/>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
-<style>
-  :root {
-    --bg: #0a0e1a;
-    --surface: #111827;
-    --surface2: #1a2235;
-    --border: rgba(99,179,237,0.15);
-    --accent: #38bdf8;
-    --accent2: #818cf8;
-    --green: #34d399;
-    --red: #f87171;
-    --yellow: #fbbf24;
-    --text: #e2e8f0;
-    --muted: #64748b;
-    --glow: rgba(56,189,248,0.12);
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'Inter', sans-serif;
-    min-height: 100vh;
-    overflow-x: hidden;
-  }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ULPF — Threat Intelligence & Log Analyzer | Universal Log Pre-processing Framework</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <style>
+    :root {
+      --bg: #070b14;
+      --surface: #0e1526;
+      --surface2: #162038;
+      --surface3: #1f2b49;
+      --border: rgba(56, 189, 248, 0.16);
+      --border-glow: rgba(56, 189, 248, 0.35);
+      --accent: #38bdf8;
+      --accent2: #818cf8;
+      --accent3: #c084fc;
+      --green: #10b981;
+      --red: #f43f5e;
+      --yellow: #f59e0b;
+      --text: #f1f5f9;
+      --text-muted: #94a3b8;
+      --text-dim: #64748b;
+      --card-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+    }
 
-  /* ── Background grid ── */
-  body::before {
-    content: '';
-    position: fixed; inset: 0;
-    background-image:
-      linear-gradient(rgba(56,189,248,0.03) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(56,189,248,0.03) 1px, transparent 1px);
-    background-size: 40px 40px;
-    pointer-events: none;
-    z-index: 0;
-  }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+    }
 
-  /* ── Header ── */
-  header {
-    position: relative; z-index: 10;
-    background: rgba(17,24,39,0.95);
-    backdrop-filter: blur(20px);
-    border-bottom: 1px solid var(--border);
-    padding: 0 2rem;
-    display: flex; align-items: center; gap: 1.5rem;
-    height: 64px;
-  }
-  .logo {
-    display: flex; align-items: center; gap: 0.75rem;
-  }
-  .logo-icon {
-    width: 36px; height: 36px;
-    background: linear-gradient(135deg, var(--accent), var(--accent2));
-    border-radius: 8px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 1.1rem; font-weight: 700; color: #fff;
-    box-shadow: 0 0 20px rgba(56,189,248,0.4);
-  }
-  .logo-text { font-size: 1rem; font-weight: 600; }
-  .logo-sub { font-size: 0.72rem; color: var(--muted); font-weight: 400; }
-  .badge {
-    background: rgba(56,189,248,0.12);
-    border: 1px solid rgba(56,189,248,0.3);
-    color: var(--accent);
-    font-size: 0.7rem; font-weight: 600;
-    padding: 2px 8px; border-radius: 20px;
-    letter-spacing: 0.05em;
-  }
-  .header-stats {
-    margin-left: auto;
-    display: flex; gap: 1.5rem; align-items: center;
-  }
-  .hstat { text-align: right; }
-  .hstat-val { font-size: 1.1rem; font-weight: 700; color: var(--accent); }
-  .hstat-label { font-size: 0.68rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.07em; }
+    /* Subtle background grid */
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background-image:
+        linear-gradient(rgba(56, 189, 248, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(56, 189, 248, 0.03) 1px, transparent 1px);
+      background-size: 32px 32px;
+      pointer-events: none;
+      z-index: 0;
+    }
 
-  /* ── Main layout ── */
-  .main { position: relative; z-index: 1; display: grid; grid-template-columns: 420px 1fr; gap: 0; height: calc(100vh - 64px); }
+    /* ── Header ────────────────────────────────────────── */
+    header {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(14, 21, 38, 0.94);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 1.5rem;
+      height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    .brand-logo {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .brand-icon {
+      width: 38px; height: 38px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      border-radius: 9px;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 800; font-size: 1.2rem; color: #fff;
+      box-shadow: 0 0 20px rgba(56, 189, 248, 0.45);
+    }
+    .brand-title {
+      font-weight: 700; font-size: 1.05rem; letter-spacing: -0.01em;
+      display: flex; align-items: center; gap: 0.5rem;
+    }
+    .brand-subtitle {
+      font-size: 0.72rem; color: var(--text-muted); font-weight: 400;
+    }
+    .badge-pill {
+      font-size: 0.68rem; font-weight: 600;
+      padding: 2px 8px; border-radius: 999px;
+      background: rgba(56, 189, 248, 0.12);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      color: var(--accent);
+    }
 
-  /* ── Left panel ── */
-  .left {
-    background: var(--surface);
-    border-right: 1px solid var(--border);
-    display: flex; flex-direction: column;
-    overflow: hidden;
-  }
-  .panel-header {
-    padding: 1.25rem 1.5rem 1rem;
-    border-bottom: 1px solid var(--border);
-    display: flex; align-items: center; justify-content: space-between;
-  }
-  .panel-title { font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); }
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    .status-indicator {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-size: 0.72rem;
+      font-weight: 600;
+    }
+    .radar-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 10px var(--green);
+      animation: pulse 1.8s infinite;
+    }
+    @keyframes pulse {
+      0% { transform: scale(0.95); opacity: 0.7; box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+      70% { transform: scale(1.15); opacity: 1; box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
+      100% { transform: scale(0.95); opacity: 0.7; box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+    }
 
-  /* ── Format selector ── */
-  .format-bar {
-    padding: 1rem 1.5rem;
-    border-bottom: 1px solid var(--border);
-    display: flex; flex-direction: column; gap: 0.5rem;
-  }
-  .format-label { font-size: 0.72rem; color: var(--muted); font-weight: 500; }
-  .format-pills { display: flex; gap: 0.4rem; flex-wrap: wrap; }
-  .pill {
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    color: var(--muted);
-    font-size: 0.7rem; font-weight: 600;
-    padding: 3px 10px; border-radius: 20px;
-    cursor: pointer; transition: all 0.15s;
-    text-transform: uppercase; letter-spacing: 0.06em;
-    user-select: none;
-  }
-  .pill:hover { border-color: var(--accent); color: var(--accent); }
-  .pill.active { background: rgba(56,189,248,0.15); border-color: var(--accent); color: var(--accent); }
+    /* ── Main Layout ──────────────────────────────────── */
+    .main-container {
+      flex: 1;
+      padding: 1.25rem 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+      position: relative;
+      z-index: 1;
+    }
 
-  /* ── Text area ── */
-  .input-area {
-    flex: 1; padding: 0;
-    position: relative; overflow: hidden;
-    display: flex; flex-direction: column;
-  }
-  .input-area textarea {
-    flex: 1;
-    width: 100%; height: 100%;
-    background: transparent;
-    border: none; outline: none; resize: none;
-    color: #94a3b8;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.72rem; line-height: 1.7;
-    padding: 1.25rem 1.5rem;
-    caret-color: var(--accent);
-  }
-  .input-area textarea::placeholder { color: #374151; }
+    /* ── Top KPI Metric Cards ──────────────────────────── */
+    .metrics-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+    }
+    .metric-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1rem 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+      position: relative;
+      overflow: hidden;
+      box-shadow: var(--card-shadow);
+      transition: transform 0.2s, border-color 0.2s;
+    }
+    .metric-card:hover {
+      transform: translateY(-2px);
+      border-color: var(--border-glow);
+    }
+    .metric-card::after {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+      background: linear-gradient(90deg, transparent, var(--card-accent, var(--accent)), transparent);
+    }
+    .metric-card.threat { --card-accent: var(--red); }
+    .metric-card.benign { --card-accent: var(--green); }
+    .metric-card.format { --card-accent: var(--accent2); }
+    .metric-card.speed  { --card-accent: var(--yellow); }
 
-  /* ── Sample buttons ── */
-  .samples {
-    padding: 1rem 1.5rem;
-    border-top: 1px solid var(--border);
-    display: flex; flex-direction: column; gap: 0.5rem;
-  }
-  .samples-label { font-size: 0.68rem; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; }
-  .samples-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.4rem; }
-  .sample-btn {
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    color: #94a3b8; font-size: 0.7rem;
-    padding: 5px 10px; border-radius: 6px;
-    cursor: pointer; text-align: left;
-    transition: all 0.15s; font-family: 'JetBrains Mono', monospace;
-  }
-  .sample-btn:hover { border-color: var(--accent2); color: var(--accent2); }
+    .metric-title {
+      font-size: 0.7rem; font-weight: 600; text-transform: uppercase;
+      letter-spacing: 0.08em; color: var(--text-muted);
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .metric-val {
+      font-size: 1.7rem; font-weight: 800; font-family: 'JetBrains Mono', monospace;
+      line-height: 1.1; color: var(--text);
+    }
+    .metric-card.threat .metric-val { color: var(--red); text-shadow: 0 0 16px rgba(244, 63, 94, 0.35); }
+    .metric-card.benign .metric-val { color: var(--green); text-shadow: 0 0 16px rgba(16, 185, 129, 0.35); }
+    .metric-card.format .metric-val { color: var(--accent2); font-size: 1.25rem; }
+    .metric-card.speed  .metric-val { color: var(--yellow); text-shadow: 0 0 16px rgba(245, 158, 11, 0.35); }
 
-  /* ── Action bar ── */
-  .action-bar {
-    padding: 1rem 1.5rem;
-    border-top: 1px solid var(--border);
-    display: flex; gap: 0.75rem; align-items: center;
-  }
-  .btn-run {
-    flex: 1;
-    background: linear-gradient(135deg, var(--accent), var(--accent2));
-    border: none; color: #fff;
-    font-size: 0.85rem; font-weight: 600;
-    padding: 10px 24px; border-radius: 8px;
-    cursor: pointer; transition: all 0.2s;
-    letter-spacing: 0.03em;
-    position: relative; overflow: hidden;
-  }
-  .btn-run:hover { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(56,189,248,0.3); }
-  .btn-run:active { transform: translateY(0); }
-  .btn-run.loading::after {
-    content: ''; position: absolute; inset: 0;
-    background: linear-gradient(90deg, transparent 25%, rgba(255,255,255,0.15) 50%, transparent 75%);
-    background-size: 200% 100%;
-    animation: shimmer 0.8s infinite;
-  }
-  @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
-  .btn-upload {
-    background: var(--surface2); border: 1px solid var(--border);
-    color: var(--muted); font-size: 0.82rem; font-weight: 500;
-    padding: 10px 16px; border-radius: 8px; cursor: pointer;
-    transition: all 0.15s; white-space: nowrap;
-  }
-  .btn-upload:hover { border-color: var(--accent); color: var(--accent); }
-  input[type="file"] { display: none; }
+    .metric-sub {
+      font-size: 0.7rem; color: var(--text-dim);
+    }
 
-  /* ── Right panel ── */
-  .right {
-    display: flex; flex-direction: column;
-    overflow: hidden; background: var(--bg);
-  }
+    /* ── Split Layout: Input on Left, Threat Cards on Right */
+    .playground-split {
+      display: grid;
+      grid-template-columns: 480px 1fr;
+      gap: 1.25rem;
+      flex: 1;
+    }
+    @media (max-width: 1100px) {
+      .playground-split { grid-template-columns: 1fr; }
+    }
+    .play-panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      box-shadow: var(--card-shadow);
+    }
+    .play-header {
+      padding: 0.85rem 1.25rem;
+      background: var(--surface2);
+      border-bottom: 1px solid var(--border);
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .sample-section {
+      padding: 0.85rem 1.25rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      background: rgba(14, 21, 38, 0.6);
+    }
+    .sample-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.4rem;
+    }
+    .btn-sample {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      font-size: 0.7rem;
+      font-family: 'JetBrains Mono', monospace;
+      padding: 7px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      text-align: left;
+      transition: all 0.15s;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+    .btn-sample:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: rgba(56, 189, 248, 0.08);
+      box-shadow: 0 0 10px rgba(56, 189, 248, 0.15);
+    }
+    .btn-sample.active-preset {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: rgba(56, 189, 248, 0.15);
+      font-weight: 700;
+    }
 
-  /* ── Stats bar ── */
-  .stats-bar {
-    padding: 1rem 1.5rem;
-    border-bottom: 1px solid var(--border);
-    background: var(--surface);
-    display: flex; gap: 1.5rem; align-items: center;
-    flex-shrink: 0;
-  }
-  .stat-card {
-    display: flex; flex-direction: column; gap: 2px;
-    min-width: 80px;
-  }
-  .stat-val { font-size: 1.3rem; font-weight: 700; line-height: 1; }
-  .stat-val.green { color: var(--green); }
-  .stat-val.red { color: var(--red); }
-  .stat-val.blue { color: var(--accent); }
-  .stat-val.purple { color: var(--accent2); }
-  .stat-label { font-size: 0.65rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; }
-  .format-tag {
-    margin-left: auto;
-    display: flex; align-items: center; gap: 0.5rem;
-  }
-  .format-tag-label { font-size: 0.68rem; color: var(--muted); }
-  .format-tag-value {
-    background: rgba(129,140,248,0.15);
-    border: 1px solid rgba(129,140,248,0.3);
-    color: var(--accent2);
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.75rem; font-weight: 600;
-    padding: 3px 10px; border-radius: 6px;
-  }
+    .play-input-wrap {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      padding: 1rem 1.25rem;
+      gap: 0.75rem;
+    }
+    .play-textarea {
+      flex: 1;
+      min-height: 230px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1rem;
+      color: var(--text);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.74rem;
+      line-height: 1.6;
+      resize: vertical;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .play-textarea:focus { border-color: var(--accent); box-shadow: 0 0 12px rgba(56, 189, 248, 0.18); }
 
-  /* ── Events table ── */
-  .events-container {
-    flex: 1; overflow-y: auto;
-    padding: 1rem 1.5rem;
-  }
-  .events-container::-webkit-scrollbar { width: 4px; }
-  .events-container::-webkit-scrollbar-track { background: transparent; }
-  .events-container::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+    .play-actions {
+      display: flex;
+      gap: 0.6rem;
+      flex-wrap: wrap;
+    }
+    .btn-run {
+      flex: 1;
+      min-width: 140px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      border: none;
+      color: #fff;
+      font-weight: 700;
+      font-size: 0.85rem;
+      padding: 10px 18px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.4rem;
+    }
+    .btn-run:hover {
+      box-shadow: 0 4px 18px rgba(56, 189, 248, 0.4);
+      transform: translateY(-1px);
+    }
+    .btn-pdf-export {
+      background: rgba(16, 185, 129, 0.12);
+      border: 1px solid rgba(16, 185, 129, 0.4);
+      color: var(--green);
+      font-weight: 700;
+      font-size: 0.8rem;
+      padding: 10px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      transition: all 0.2s;
+    }
+    .btn-pdf-export:hover:not(:disabled) {
+      background: rgba(16, 185, 129, 0.2);
+      box-shadow: 0 0 14px rgba(16, 185, 129, 0.25);
+    }
+    .btn-pdf-export:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+    .btn-upload-label {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      transition: all 0.15s;
+    }
+    .btn-upload-label:hover { border-color: var(--accent); color: var(--accent); }
+    .btn-clear-input {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--text-dim);
+      padding: 10px 12px;
+      border-radius: 8px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .btn-clear-input:hover { border-color: var(--red); color: var(--red); }
+    input[type="file"] { display: none; }
 
-  .empty-state {
-    display: flex; flex-direction: column;
-    align-items: center; justify-content: center;
-    height: 100%; gap: 1rem; color: var(--muted);
-  }
-  .empty-icon { font-size: 3rem; opacity: 0.3; }
-  .empty-text { font-size: 0.9rem; }
-  .empty-sub { font-size: 0.75rem; opacity: 0.6; }
+    /* Results section on right */
+    .play-results {
+      flex: 1;
+      overflow-y: auto;
+      max-height: calc(100vh - 270px);
+      padding: 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
 
-  /* ── Event card ── */
-  .event-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 10px; margin-bottom: 0.75rem;
-    overflow: hidden; transition: border-color 0.15s;
-  }
-  .event-card:hover { border-color: rgba(99,179,237,0.35); }
-  .event-card.error-card { border-color: rgba(248,113,113,0.25); }
-  .event-header {
-    padding: 0.75rem 1rem;
-    display: flex; align-items: center; gap: 0.75rem;
-    cursor: pointer; user-select: none;
-    background: var(--surface2);
-  }
-  .event-num {
-    font-size: 0.65rem; color: var(--muted);
-    font-family: 'JetBrains Mono', monospace;
-    min-width: 2rem;
-  }
-  .event-raw {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.68rem; color: #64748b;
-    flex: 1; overflow: hidden;
-    white-space: nowrap; text-overflow: ellipsis;
-  }
-  .event-status {
-    font-size: 0.65rem; font-weight: 700;
-    padding: 2px 8px; border-radius: 20px;
-    white-space: nowrap;
-  }
-  .status-ok { background: rgba(52,211,153,0.15); color: var(--green); }
-  .status-err { background: rgba(248,113,113,0.15); color: var(--red); }
-  .event-body {
-    padding: 0.75rem 1rem;
-    display: none;
-  }
-  .event-body.open { display: block; }
-  .fields-grid {
-    display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-    gap: 0.5rem;
-  }
-  .field-item {
-    background: var(--bg);
-    border: 1px solid rgba(255,255,255,0.05);
-    border-radius: 6px; padding: 0.5rem 0.75rem;
-  }
-  .field-name {
-    font-size: 0.62rem; color: var(--accent2);
-    font-family: 'JetBrains Mono', monospace;
-    font-weight: 500; margin-bottom: 2px;
-  }
-  .field-value {
-    font-size: 0.72rem; color: var(--text);
-    font-family: 'JetBrains Mono', monospace;
-    word-break: break-all; line-height: 1.4;
-  }
-  .field-item.ip .field-value { color: var(--accent); }
-  .field-item.label .field-value { color: var(--green); }
-  .field-item.label.attack .field-value { color: var(--red); }
-  .field-item.hash .field-value { color: var(--muted); font-size: 0.62rem; }
+    /* Sub-bar on top of results */
+    .analyzer-toolbar {
+      padding: 0.75rem 1.25rem;
+      background: var(--surface2);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .search-threat-input {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 5px 12px;
+      color: var(--text);
+      font-size: 0.75rem;
+      font-family: 'JetBrains Mono', monospace;
+      outline: none;
+      width: 200px;
+      transition: border-color 0.2s;
+    }
+    .search-threat-input:focus { border-color: var(--accent); }
 
-  /* ── Error display ── */
-  .error-msg { color: var(--red); font-size: 0.75rem; padding: 0.5rem; }
+    /* Badges */
+    .pill-badge {
+      display: inline-block;
+      padding: 2px 7px;
+      border-radius: 4px;
+      font-size: 0.66rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .pill-badge.deny, .pill-badge.block, .pill-badge.drop {
+      background: rgba(244, 63, 94, 0.18);
+      border: 1px solid rgba(244, 63, 94, 0.45);
+      color: var(--red);
+    }
+    .pill-badge.allow, .pill-badge.pass, .pill-badge.accept {
+      background: rgba(16, 185, 129, 0.15);
+      border: 1px solid rgba(16, 185, 129, 0.4);
+      color: var(--green);
+    }
+    .pill-badge.alert, .pill-badge.suspicious {
+      background: rgba(245, 158, 11, 0.15);
+      border: 1px solid rgba(245, 158, 11, 0.4);
+      color: var(--yellow);
+    }
+    .pill-badge.sev-crit, .pill-badge.sev-high, .pill-badge.sev-critical {
+      background: rgba(244, 63, 94, 0.22); color: var(--red); border: 1px solid rgba(244, 63, 94, 0.4);
+    }
+    .pill-badge.sev-med, .pill-badge.sev-medium {
+      background: rgba(245, 158, 11, 0.2); color: var(--yellow); border: 1px solid rgba(245, 158, 11, 0.4);
+    }
+    .pill-badge.sev-low, .pill-badge.sev-info {
+      background: rgba(56, 189, 248, 0.15); color: var(--accent); border: 1px solid rgba(56, 189, 248, 0.3);
+    }
 
-  /* ── Glow animation on process ── */
-  @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
-  .event-card { animation: fadeIn 0.15s ease-out; }
+    /* Result Cards */
+    .drawer-content {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1.1rem;
+      font-family: 'Inter', sans-serif;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+      transition: all 0.2s ease;
+    }
+    .drawer-content:hover {
+      border-color: var(--border-glow);
+    }
+    .drawer-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(205px, 1fr));
+      gap: 0.5rem;
+      margin-bottom: 0.85rem;
+    }
+    .drawer-item {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 6px 10px;
+    }
+    .drawer-key {
+      font-size: 0.64rem;
+      color: var(--accent);
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 600;
+      margin-bottom: 2px;
+    }
+    .drawer-val {
+      font-size: 0.72rem;
+      color: var(--text);
+      font-family: 'JetBrains Mono', monospace;
+      word-break: break-all;
+    }
+    .raw-box {
+      background: #04060a;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 6px;
+      padding: 8px 12px;
+      padding-right: 80px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.7rem;
+      color: #94a3b8;
+      word-break: break-all;
+      position: relative;
+    }
+    .btn-copy {
+      position: absolute; right: 8px; top: 8px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--accent);
+      font-size: 0.65rem;
+      padding: 3px 8px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      font-weight: 600;
+      transition: all 0.15s;
+    }
+    .btn-copy:hover {
+      background: var(--accent);
+      color: #070b14;
+    }
 
-  /* ── Toast ── */
-  .toast {
-    position: fixed; bottom: 1.5rem; right: 1.5rem;
-    background: var(--surface); border: 1px solid var(--border);
-    padding: 0.75rem 1.25rem; border-radius: 8px;
-    font-size: 0.8rem; color: var(--text);
-    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
-    z-index: 1000; transition: all 0.3s;
-    transform: translateY(100px); opacity: 0;
-  }
-  .toast.show { transform: translateY(0); opacity: 1; }
+    .btn-ctrl {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      padding: 5px 12px;
+      border-radius: 6px;
+      font-size: 0.74rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+    .btn-ctrl:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
 
-  /* scrollbar */
-  html { scrollbar-color: #1e293b #0a0e1a; }
-</style>
+    /* Toast Notification */
+    .toast-box {
+      position: fixed; bottom: 1.5rem; right: 1.5rem;
+      background: var(--surface2);
+      border: 1px solid var(--accent);
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+      border-radius: 8px;
+      padding: 0.75rem 1.25rem;
+      font-size: 0.8rem;
+      color: var(--text);
+      z-index: 999;
+      transform: translateY(100px);
+      opacity: 0;
+      transition: all 0.25s ease;
+    }
+    .toast-box.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  </style>
 </head>
 <body>
 
-<!-- ── Header ─────────────────────────────────────────────── -->
-<header>
-  <div class="logo">
-    <div class="logo-icon">U</div>
-    <div>
-      <div class="logo-text">ULPF</div>
-      <div class="logo-sub">Universal Log Pre-processing Framework</div>
-    </div>
-  </div>
-  <span class="badge">v1.0</span>
-  <div class="header-stats">
-    <div class="hstat">
-      <div class="hstat-val" id="h-parsers">7</div>
-      <div class="hstat-label">Parsers</div>
-    </div>
-    <div class="hstat">
-      <div class="hstat-val" id="h-processed" style="color:var(--green)">0</div>
-      <div class="hstat-label">Processed</div>
-    </div>
-  </div>
-</header>
-
-<!-- ── Main ───────────────────────────────────────────────── -->
-<div class="main">
-
-  <!-- Left panel -->
-  <div class="left">
-    <div class="panel-header">
-      <span class="panel-title">Log Input</span>
-    </div>
-
-    <!-- Format selector -->
-    <div class="format-bar">
-      <div class="format-label">Parser</div>
-      <div class="format-pills" id="format-pills">
-        <div class="pill active" data-fmt="auto">Auto</div>
+  <!-- ── Executive Header ──────────────────────────────── -->
+  <header>
+    <div class="header-left">
+      <div class="brand-logo">
+        <div class="brand-icon">🛡️</div>
+        <div>
+          <div class="brand-title">
+            ULPF Threat Intelligence & Log Analyzer
+            <span class="badge-pill">v1.0</span>
+          </div>
+          <div class="brand-subtitle">Universal Log Pre-processing Framework — Zero-Noise Security Analysis</div>
+        </div>
       </div>
     </div>
 
-    <!-- Text input -->
-    <div class="input-area">
-      <textarea id="log-input" placeholder="Paste any raw log lines here…
-
-Examples:
-  CEF:0|Cisco|ASA|9.14|106023|Deny TCP|6|src=192.168.1.5
-  &lt;134&gt;Jan  8 12:34:56 fw01 ASA: Deny tcp src 10.0.0.1
-  01/08-12:34:56 [**] [1:2100498:7] ICMP PING [**] {ICMP} 1.2.3.4 -&gt; 5.6.7.8
-  LEEF:1.0|Cisco|ASA|9.14|event|src=10.0.0.1	dst=8.8.8.8
-  {&quot;src_ip&quot;:&quot;192.168.1.5&quot;,&quot;action&quot;:&quot;deny&quot;}"></textarea>
-    </div>
-
-    <!-- Samples -->
-    <div class="samples">
-      <div class="samples-label">Quick Samples</div>
-      <div class="samples-grid">
-        <button class="sample-btn" onclick="loadSample('cef')">📋 CEF (Cisco/Palo Alto)</button>
-        <button class="sample-btn" onclick="loadSample('syslog')">🖥 Syslog (RFC 3164)</button>
-        <button class="sample-btn" onclick="loadSample('snort')">🛡 Snort/Suricata</button>
-        <button class="sample-btn" onclick="loadSample('leef')">🔷 LEEF (QRadar)</button>
-        <button class="sample-btn" onclick="loadSample('json')">{ } Generic JSON</button>
-        <button class="sample-btn" onclick="loadSample('mixed')">🔀 Mixed formats</button>
+    <div class="header-right">
+      <div class="badge-pill" style="background:rgba(129,140,248,0.15); border:1px solid rgba(129,140,248,0.35); color:var(--accent2); font-size:0.72rem; padding:4px 10px; display:flex; align-items:center; gap:0.4rem;">
+        <span>🤖</span> <span>ML Engine: ACTIVE (Calibrated RF)</span>
+      </div>
+      <div class="badge-pill" style="background:rgba(56,189,248,0.12); border:1px solid rgba(56,189,248,0.3); color:var(--accent); font-size:0.72rem; padding:4px 10px;">
+        <span>📜</span> <span>UES Taxonomy Compliant</span>
+      </div>
+      <div class="status-indicator">
+        <div class="radar-dot"></div>
+        <span>ENGINE READY</span>
       </div>
     </div>
+  </header>
 
-    <!-- Actions -->
-    <div class="action-bar">
-      <button class="btn-run" id="run-btn" onclick="process()">▶ Analyze Logs</button>
-      <label class="btn-upload">
-        📂 Upload File
-        <input type="file" id="file-input" accept=".log,.txt,.cef,.jsonl" onchange="uploadFile(this)"/>
-      </label>
-    </div>
-  </div>
+  <!-- ── Main Dedicated View ───────────────────────────── -->
+  <main class="main-container">
 
-  <!-- Right panel -->
-  <div class="right">
-    <!-- Stats bar -->
-    <div class="stats-bar">
-      <div class="stat-card">
-        <div class="stat-val blue" id="s-total">—</div>
-        <div class="stat-label">Lines</div>
+    <!-- Top KPI Telemetry Row -->
+    <div class="metrics-row">
+      <div class="metric-card">
+        <div class="metric-title">Total Logs Scanned</div>
+        <div class="metric-val" id="kpi-total">0</div>
+        <div class="metric-sub" id="kpi-total-sub">Normalized via UES schema</div>
       </div>
-      <div class="stat-card">
-        <div class="stat-val green" id="s-ok">—</div>
-        <div class="stat-label">Parsed OK</div>
+      <div class="metric-card threat">
+        <div class="metric-title" style="color:var(--red);">Threats Isolated</div>
+        <div class="metric-val" id="kpi-threat">0</div>
+        <div class="metric-sub" id="kpi-threat-pct" style="color:var(--red);">Zero Noise / Filtered</div>
       </div>
-      <div class="stat-card">
-        <div class="stat-val red" id="s-err">—</div>
-        <div class="stat-label">Errors</div>
+      <div class="metric-card benign">
+        <div class="metric-title" style="color:var(--green);">Benign / Baseline Traffic</div>
+        <div class="metric-val" id="kpi-benign">0</div>
+        <div class="metric-sub" id="kpi-benign-pct">Safe network baseline</div>
       </div>
-      <div class="stat-card">
-        <div class="stat-val purple" id="s-rate">—</div>
-        <div class="stat-label">Success</div>
+      <div class="metric-card format">
+        <div class="metric-title">Auto-Detected Format</div>
+        <div class="metric-val" id="kpi-format">AUTO</div>
+        <div class="metric-sub" id="kpi-format-sub">12 registered perimeter formats</div>
       </div>
-      <div class="stat-card">
-        <div class="stat-val" id="s-eps">—</div>
-        <div class="stat-label">Events/sec</div>
-      </div>
-      <div class="format-tag">
-        <span class="format-tag-label">Detected format</span>
-        <span class="format-tag-value" id="s-format">—</span>
+      <div class="metric-card speed">
+        <div class="metric-title">Pipeline Latency</div>
+        <div class="metric-val" id="kpi-latency">0 ms</div>
+        <div class="metric-sub">Sub-millisecond normalization</div>
       </div>
     </div>
 
-    <!-- Events list -->
-    <div class="events-container" id="events-container">
-      <div class="empty-state" id="empty-state">
-        <div class="empty-icon">📡</div>
-        <div class="empty-text">Paste log lines and click Analyze</div>
-        <div class="empty-sub">Supports Syslog · CEF · LEEF · Snort · JSON · CSV — auto-detected</div>
+    <!-- Playground Split: Ingestion Controls (Left) & Threat Intelligence Records (Right) -->
+    <div class="playground-split">
+
+      <!-- Left Panel: Ingestion & Presets -->
+      <div class="play-panel">
+        <div class="play-header">
+          <span>Perimeter Ingestion & Preset Library</span>
+          <span style="font-size:0.7rem; color:var(--text-muted); font-weight:normal;">10 FORMATS</span>
+        </div>
+
+        <div class="sample-section">
+          <div style="font-size: 0.72rem; color: var(--text-muted); font-weight: 600; margin-bottom: 0.2rem;">
+            ONE-CLICK TEST PRESETS
+          </div>
+          <div class="sample-grid">
+            <button class="btn-sample" id="preset-paloalto" onclick="loadSample('paloalto')">🛡️ Palo Alto Threat</button>
+            <button class="btn-sample" id="preset-cisco_asa" onclick="loadSample('cisco_asa')">🔥 Cisco ASA Firewall</button>
+            <button class="btn-sample" id="preset-cef" onclick="loadSample('cef')">📋 ArcSight CEF</button>
+            <button class="btn-sample" id="preset-snort" onclick="loadSample('snort')">🚨 Snort Alert IDS</button>
+            <button class="btn-sample" id="preset-syslog" onclick="loadSample('syslog')">🖥️ RFC Syslog</button>
+            <button class="btn-sample" id="preset-leef" onclick="loadSample('leef')">🔷 IBM LEEF</button>
+            <button class="btn-sample" id="preset-windows" onclick="loadSample('windows')">🪟 Windows Event XML</button>
+            <button class="btn-sample" id="preset-cloudtrail" onclick="loadSample('cloudtrail')">☁️ AWS CloudTrail</button>
+            <button class="btn-sample" id="preset-json" onclick="loadSample('json')">{ } Generic JSON</button>
+            <button class="btn-sample" id="preset-xml" onclick="loadSample('xml')">📄 Generic XML</button>
+          </div>
+        </div>
+
+        <div class="play-input-wrap">
+          <textarea class="play-textarea" id="play-textarea" placeholder="Paste raw perimeter log lines or select any one-click preset above..."></textarea>
+          <div class="play-actions">
+            <button class="btn-run" id="btn-analyze" onclick="runAnalyzer()">▶ Analyze Logs</button>
+            <button class="btn-pdf-export" id="btn-pdf" onclick="downloadPDF()" title="Export isolated security threats to PDF" disabled>
+              <span>⬇</span> Download PDF
+            </button>
+            <label class="btn-upload-label" title="Upload local log file">
+              <span>📂</span> Upload Log
+              <input type="file" id="play-file-upload" onchange="uploadLogFile(this)" />
+            </label>
+            <button class="btn-clear-input" onclick="clearAnalyzer()" title="Clear editor">
+              <span>🗑</span> Clear
+            </button>
+          </div>
+        </div>
       </div>
+
+      <!-- Right Panel: Threat Records & Canonical UES Grid -->
+      <div class="play-panel">
+        <div class="play-header">
+          <span>Canonical Normalized Security Records (UES Schema)</span>
+          <span class="badge-pill" id="play-detected-badge" style="background: rgba(56, 189, 248, 0.15); color: var(--accent);">
+            FORMAT: AUTO-DETECT
+          </span>
+        </div>
+
+        <!-- Analyzer Toolbar: Mode Toggle, Counter Badges & Live Search -->
+        <div class="analyzer-toolbar" id="analyzer-filter-bar">
+          <div style="display:flex; gap:6px; align-items:center; flex-wrap:wrap;">
+            <button class="btn-ctrl active" id="btn-an-threats" onclick="setAnalyzerFilter('threats')" style="background:rgba(244,63,94,0.2); border-color:rgba(244,63,94,0.45); color:var(--red); font-weight:700; font-size:0.75rem;">
+              🛡️ Threats Only
+            </button>
+            <button class="btn-ctrl" id="btn-an-all" onclick="setAnalyzerFilter('all')" style="font-size:0.75rem;">
+              🌐 All Parsed
+            </button>
+            <span class="badge-pill" id="badge-an-threats" style="background:rgba(244,63,94,0.15); color:var(--red); font-weight:700;">0 Threats</span>
+            <span class="badge-pill" id="badge-an-benign" style="background:rgba(16,185,129,0.15); color:var(--green);">0 Benign</span>
+            <span class="badge-pill" id="badge-an-total" style="background:rgba(56,189,248,0.15); color:var(--accent);">0 Parsed</span>
+            <span class="badge-pill" id="badge-an-errors" style="background:rgba(245,158,11,0.15); color:var(--yellow); display:none;">0 Skipped</span>
+          </div>
+          <div>
+            <input type="text" class="search-threat-input" id="search-threats" placeholder="🔍 Search IP, event, MITRE..." oninput="filterResultsBySearch()" />
+          </div>
+        </div>
+
+        <!-- Results Display -->
+        <div class="play-results" id="play-results">
+          <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; color:var(--text-dim); gap:0.5rem;">
+            <div style="font-size:2.5rem; opacity:0.3;">📡</div>
+            <div style="font-size:0.85rem;">Select a sample preset or paste raw logs and click "Analyze Logs"</div>
+            <div style="font-size:0.72rem;">Zero-noise security engine highlights only actionable threats by default</div>
+          </div>
+        </div>
+      </div>
+
     </div>
-  </div>
-</div>
+  </main>
 
-<div class="toast" id="toast"></div>
+  <div class="toast-box" id="toast-box"></div>
 
-<script>
-// ── Sample data ───────────────────────────────────────────────────────────────
-const SAMPLES = {
-  cef: `CEF:0|Cisco|ASA|9.14|106023|Deny TCP|6|src=192.168.1.5 spt=44231 dst=10.0.0.1 dpt=443 proto=TCP act=Deny
-CEF:0|Palo Alto Networks|PAN-OS|10.1|threat|Threat Detected|8|src=10.0.0.5 spt=54321 dst=203.0.113.1 dpt=80 proto=TCP act=block request=/admin/login.php requestMethod=POST
-CEF:0|Check Point|Firewall|R81|Accept|Connection Accepted|2|src=192.168.10.5 spt=32456 dst=8.8.8.8 dpt=53 proto=UDP act=Accept
-CEF:0|Fortinet|FortiGate|7.2|00013|traffic forward deny|6|src=172.16.1.100 spt=44500 dst=192.0.2.55 dpt=8443 proto=TCP act=Deny suser=jsmith`,
+  <!-- ── Application Logic ─────────────────────────────── -->
+  <script>
+    // 10 Diverse Presets for Instant Testing
+    const SAMPLES = {
+      paloalto: `1,2024/01/18 10:22:15,001801000001,THREAT,vulnerability,2561,2024/01/18 10:22:15,198.51.100.12,10.0.0.45,0.0.0.0,0.0.0.0,rule-inbound,,,web-browsing,vsys1,untrust,trust,ethernet1/1,ethernet1/2,alert-syslog,2024/01/18 10:22:15,44123,1,54321,80,0,0,0x0,tcp,alert,"/etc/passwd",Apache Path Traversal(30012),any,critical,client-to-server,0,,0.0.0.0,United States`,
 
-  syslog: `<134>Jan  8 12:34:56 fw01 ASA-3-106023: Deny tcp src outside:192.168.1.5/44231 dst inside:10.0.0.1/443 by access-group "outside_access_in"
-<30>Jan 15 08:22:10 pfsense filterlog: 5,,,em0,match,pass,in,4,192.168.1.100,10.0.0.50,55432,80
-<134>1 2024-01-08T12:34:56.000Z pa-fw-01 firewall - TRAFFIC - src=192.168.2.10 dst=8.8.8.8 spt=54321 dpt=53 proto=UDP action=allow
-<134>1 2024-01-08T12:00:00Z router01 firewall - - - src=172.16.0.5 dst=192.0.2.1 spt=1234 dpt=8080 proto=TCP action=DENY`,
+      cisco_asa: `<134>Jan 18 10:22:15 fw01 %ASA-3-106023: Deny tcp src outside:198.51.100.44/52100 dst inside:10.0.1.50/443 by access-group "outside_in" [0x0, 0x0]
+<134>Jan 18 10:22:16 fw01 %ASA-4-106023: Deny udp src outside:203.0.113.88/44321 dst dmz:192.168.10.5/53 by access-group "outside_in"`,
 
-  snort: `01/08-12:34:56.123456  [**] [1:2100498:7] ICMP PING [**] [Classification: Misc activity] [Priority: 3] {ICMP} 192.168.1.5 -> 10.0.0.1
-01/08-12:35:01.654321  [**] [1:2001219:20] ET SCAN Potential SSH Scan [**] [Classification: Attempted Information Leak] [Priority: 2] {TCP} 10.5.5.100:44321 -> 192.168.1.1:22
-01/08/2024-12:36:00.000000  [Drop] [**] [1:2019284:3] ET POLICY Suspicious Outbound User-Agent (gobuster) [**] [Classification: Network Trojan Detected] [Priority: 1] {TCP} 192.168.1.200:43210 -> 8.8.8.8:80
-01/08-12:37:15.999999  [**] [1:2006546:7] ET EXPLOIT SQL Injection Attempt [**] [Classification: Web Application Attack] [Priority: 1] {TCP} 45.33.32.156:12345 -> 10.0.0.50:443`,
+      cef: `CEF:0|Cisco|ASA|9.14|106023|Deny TCP Traffic|7|src=198.51.100.55 spt=49210 dst=10.0.2.15 dpt=22 proto=TCP act=Deny msg=Inbound SSH blocked
+CEF:0|Palo Alto Networks|PAN-OS|10.1|threat|SQL Injection Detected|9|src=203.0.113.14 spt=51234 dst=172.16.0.10 dpt=80 proto=TCP act=drop`,
 
-  leef: `LEEF:1.0|Cisco|ASA|9.14|106023|src=192.168.1.5\tspt=44231\tdst=10.0.0.1\tdpt=443\tproto=TCP\taction=deny\tsev=7
-LEEF:1.0|Palo Alto Networks|PAN-OS|10.1|threat|src=10.0.0.5\tspt=54321\tdst=203.0.113.1\tdpt=80\tproto=TCP\taction=block\tcat=threat\tsev=8
-LEEF:2.0|IBM|QRadar|7.5|5000|delimiter=\\t|src=172.16.1.100\tspt=33456\tdst=8.8.8.8\tdpt=53\tproto=UDP\taction=allow\tsev=2`,
+      snort: `01/18-10:22:15.123456  [**] [1:2001219:20] ET SCAN Potential SSH Brute Force Scan [**] [Classification: Attempted Information Leak] [Priority: 1] {TCP} 198.51.100.77:43210 -> 10.0.1.25:22
+01/18-10:22:16.654321  [**] [1:2019284:3] ET EXPLOIT Remote Code Execution Attempt [**] [Priority: 1] {TCP} 203.0.113.120:55432 -> 10.0.2.80:8080`,
 
-  json: `{"timestamp":"2024-01-08T12:34:56Z","src_ip":"192.168.1.5","dst_ip":"10.0.0.1","src_port":44231,"dst_port":443,"protocol":"tcp","action":"deny","severity":"high"}
-{"timestamp":"2024-01-08T12:35:00Z","src_ip":"10.5.5.100","dst_ip":"192.168.1.1","src_port":55432,"dst_port":22,"protocol":"tcp","action":"allow","user_agent":"gobuster/3.1.0"}
-{"timestamp":"2024-01-08T12:35:22Z","src_ip":"203.0.113.5","dst_ip":"10.0.0.50","src_port":55123,"dst_port":80,"protocol":"tcp","action":"alert","threat":"SQL Injection"}`,
+      syslog: `<134>Jan 18 10:25:01 perimeter-fw01 filterlog[1204]: 5,,,em0,match,pass,in,4,198.51.100.22,10.0.1.100,54321,443,tcp,flags,S
+<134>1 2024-01-18T10:25:02.000Z perimeter-gw firewall - - - src=203.0.113.99 dst=10.0.1.20 spt=12345 dpt=8080 proto=TCP action=DENY`,
 
-  mixed: `CEF:0|Cisco|ASA|9.14|106023|Deny TCP|6|src=10.1.1.5 dst=8.8.8.8 act=Deny
-<134>Jan  8 12:34:56 fw01 ASA: Deny tcp src outside:10.0.0.1/443 dst inside:192.168.1.1/80
-01/08-12:34:56.123456  [**] [1:2100498:7] ICMP PING [**] [Priority: 3] {ICMP} 192.168.1.5 -> 10.0.0.1
-LEEF:1.0|IBM|QRadar|7.5|event|src=10.0.0.5\tdst=8.8.8.8\taction=allow`
-};
+      leef: `LEEF:1.0|Cisco|ASA|9.14|106023|src=198.51.100.60	spt=52111	dst=10.0.1.15	dpt=443	proto=TCP	action=deny	sev=8
+LEEF:2.0|IBM|QRadar|7.5|5000|delimiter=\\t|src=203.0.113.15	spt=33456	dst=8.8.8.8	dpt=53	proto=UDP	action=allow	sev=2`,
 
-// ── State ─────────────────────────────────────────────────────────────────────
-let selectedFormat = 'auto';
-let totalProcessed = 0;
+      windows: `<Event xmlns="http://schemas.microsoft.com/win/2004/08/events/event">
+  <System>
+    <Provider Name="Microsoft-Windows-Security-Auditing" Guid="{54849625-5478-4994-A5BA-3E3B0328C30D}" />
+    <EventID>4625</EventID>
+    <TimeCreated SystemTime="2024-01-18T10:22:15.000000000Z" />
+    <Computer>DC-01.corp.internal</Computer>
+  </System>
+  <EventData>
+    <Data Name="TargetUserName">Administrator</Data>
+    <Data Name="WorkstationName">WORKSTATION-09</Data>
+    <Data Name="IpAddress">198.51.100.95</Data>
+    <Data Name="IpPort">59102</Data>
+    <Data Name="Status">0xC000006D</Data>
+    <Data Name="SubStatus">0xC000006A</Data>
+  </EventData>
+</Event>`,
 
-// ── Init ──────────────────────────────────────────────────────────────────────
-async function init() {
-  const res = await fetch('/api/parsers');
-  const data = await res.json();
-  document.getElementById('h-parsers').textContent = data.parsers.length;
+      cloudtrail: `{"eventVersion":"1.08","userIdentity":{"type":"IAMUser","userName":"attacker_svc","arn":"arn:aws:iam::123456789012:user/attacker_svc"},"eventTime":"2024-01-18T10:22:15Z","eventSource":"iam.amazonaws.com","eventName":"CreateAccessKey","sourceIPAddress":"198.51.100.110","userAgent":"aws-cli/2.9.1","errorCode":"AccessDenied","errorMessage":"User is not authorized to perform: iam:CreateAccessKey"}`,
 
-  const container = document.getElementById('format-pills');
-  data.parsers.forEach(p => {
-    const pill = document.createElement('div');
-    pill.className = 'pill';
-    pill.dataset.fmt = p.name;
-    pill.textContent = p.name.toUpperCase();
-    pill.title = p.description;
-    pill.onclick = () => selectFormat(p.name, pill);
-    container.appendChild(pill);
-  });
-}
+      json: `{"timestamp":"2024-01-18T10:22:15Z","src_ip":"198.51.100.150","dst_ip":"10.0.1.80","src_port":44123,"dst_port":80,"protocol":"TCP","action":"deny","severity":"high","threat_name":"Cross-Site Scripting"}`,
 
-function selectFormat(fmt, el) {
-  selectedFormat = fmt;
-  document.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
-  el.classList.add('active');
-}
-
-function loadSample(type) {
-  document.getElementById('log-input').value = SAMPLES[type] || '';
-
-  // Auto-select matching format pill
-  const fmtMap = { cef:'cef', syslog:'syslog', snort:'snort_alert', leef:'leef', json:'json', mixed:'auto' };
-  const fmt = fmtMap[type] || 'auto';
-  const pill = document.querySelector(`.pill[data-fmt="${fmt}"]`);
-  if (pill) selectFormat(fmt, pill);
-}
-
-// ── Main process ───────────────────────────────────────────────────────────────
-async function process() {
-  const raw = document.getElementById('log-input').value.trim();
-  if (!raw) { showToast('⚠ Paste some log lines first'); return; }
-
-  const btn = document.getElementById('run-btn');
-  btn.classList.add('loading');
-  btn.textContent = '⏳ Processing…';
-
-  try {
-    const res = await fetch('/api/process', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ lines: raw, format: selectedFormat }),
-    });
-    const data = await res.json();
-    if (!res.ok) { showToast('❌ ' + (data.error || 'Error')); return; }
-    renderResults(data);
-  } catch (e) {
-    showToast('❌ Network error: ' + e.message);
-  } finally {
-    btn.classList.remove('loading');
-    btn.textContent = '▶ Analyze Logs';
-  }
-}
-
-function renderResults(data) {
-  const { stats, events, format_detected, severity_counts } = data;
-
-  // Update stats bar
-  document.getElementById('s-total').textContent = stats.total_lines;
-  document.getElementById('s-ok').textContent = stats.parsed_ok;
-  document.getElementById('s-err').textContent = stats.parse_errors;
-  document.getElementById('s-rate').textContent = stats.success_rate + '%';
-  document.getElementById('s-eps').textContent = stats.events_per_sec.toLocaleString();
-  document.getElementById('s-format').textContent = format_detected;
-
-  // Update header counter
-  totalProcessed += stats.parsed_ok;
-  document.getElementById('h-processed').textContent = totalProcessed;
-
-  // Render events
-  const container = document.getElementById('events-container');
-  document.getElementById('empty-state').style.display = 'none';
-
-  // Clear previous
-  container.querySelectorAll('.event-card').forEach(el => el.remove());
-
-  events.forEach((ev, idx) => {
-    container.appendChild(buildEventCard(ev, idx + 1));
-  });
-
-  showToast(`✅ Parsed ${stats.parsed_ok}/${stats.total_lines} lines as ${format_detected} in ${stats.elapsed_ms}ms`);
-}
-
-function buildEventCard(ev, num) {
-  const card = document.createElement('div');
-  card.className = 'event-card' + (ev.success ? '' : ' error-card');
-
-  const header = document.createElement('div');
-  header.className = 'event-header';
-  header.innerHTML = `
-    <span class="event-num">#${String(num).padStart(3,'0')}</span>
-    <span class="event-raw">${esc(ev.raw_log || '')}</span>
-    <span class="event-status ${ev.success ? 'status-ok' : 'status-err'}">
-      ${ev.success ? '✓ OK' : '✗ ERROR'}
-    </span>`;
-
-  const body = document.createElement('div');
-  body.className = 'event-body';
-
-  if (!ev.success) {
-    body.innerHTML = `<div class="error-msg">⚠ ${esc(ev.error || 'Parse failed')}</div>`;
-  } else {
-    // Priority fields first
-    const priority = ['event_uid','record_hash','format_name','source_id',
-                      'ingest_timestamp','src_ip','dst_ip','src_port','dst_port',
-                      'protocol','severity','event_category','event_action',
-                      'threat_name','threat_signature_id','user_agent','vendor',
-                      'device_type','weak_label','label_confidence'];
-    const shown = new Set();
-    const grid = document.createElement('div');
-    grid.className = 'fields-grid';
-
-    const addField = (k, v) => {
-      if (shown.has(k) || v === null || v === undefined || v === '') return;
-      if (k === 'raw_log' || k === 'extra_fields') return;
-      shown.add(k);
-      const cls = k.includes('ip') ? 'ip' :
-                  k === 'weak_label' ? ('label ' + (v === 'attack' ? 'attack' : '')) :
-                  k === 'record_hash' || k === 'event_uid' ? 'hash' : '';
-      const item = document.createElement('div');
-      item.className = 'field-item ' + cls;
-      item.innerHTML = `<div class="field-name">${esc(k)}</div><div class="field-value">${esc(String(v))}</div>`;
-      grid.appendChild(item);
+      xml: `<log><timestamp>2024-01-18T10:22:15Z</timestamp><src_ip>198.51.100.200</src_ip><dst_ip>10.0.1.5</dst_ip><port>443</port><protocol>TCP</protocol><action>block</action><message>Firewall drop invalid state</message></log>`
     };
 
-    priority.forEach(k => { if (ev[k] !== undefined) addField(k, ev[k]); });
-    Object.entries(ev).forEach(([k,v]) => addField(k, v));
+    // State
+    let _lastAnalysisData = null;
+    let _analyzerFilter = 'threats'; // Default to THREATS ONLY!
 
-    // Extra fields
-    if (ev.extra_fields && Object.keys(ev.extra_fields).length > 0) {
-      Object.entries(ev.extra_fields).forEach(([k,v]) => {
-        if (v !== null && v !== undefined) addField('extra.' + k, v);
-      });
+    // Initialize & preload Palo Alto threat sample immediately
+    document.addEventListener("DOMContentLoaded", () => {
+      loadSample('paloalto');
+      runAnalyzer();
+    });
+
+    function loadSample(key) {
+      document.getElementById("play-textarea").value = SAMPLES[key] || "";
+      document.querySelectorAll(".btn-sample").forEach(btn => btn.classList.remove("active-preset"));
+      const activeBtn = document.getElementById(`preset-${key}`);
+      if (activeBtn) activeBtn.classList.add("active-preset");
+      showToast(`Loaded preset: ${key.toUpperCase()}`);
     }
 
-    body.appendChild(grid);
-  }
+    function clearAnalyzer() {
+      document.getElementById("play-textarea").value = "";
+      document.querySelectorAll(".btn-sample").forEach(btn => btn.classList.remove("active-preset"));
+      document.getElementById("play-results").innerHTML = `
+        <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; color:var(--text-dim); gap:0.5rem;">
+          <div style="font-size:2.5rem; opacity:0.3;">📡</div>
+          <div style="font-size:0.85rem;">Select a sample preset or paste raw logs and click "Analyze Logs"</div>
+        </div>`;
+      document.getElementById("kpi-total").textContent = "0";
+      document.getElementById("kpi-threat").textContent = "0";
+      document.getElementById("kpi-benign").textContent = "0";
+      document.getElementById("kpi-format").textContent = "AUTO";
+      document.getElementById("kpi-latency").textContent = "0 ms";
+      const pdfBtn = document.getElementById("btn-pdf");
+      if (pdfBtn) pdfBtn.disabled = true;
+      _lastAnalysisData = null;
+      showToast("Analyzer cleared");
+    }
 
-  header.onclick = () => body.classList.toggle('open');
-  card.appendChild(header);
-  card.appendChild(body);
-  return card;
-}
+    function setAnalyzerFilter(mode) {
+      _analyzerFilter = mode;
+      const btnThreats = document.getElementById("btn-an-threats");
+      const btnAll = document.getElementById("btn-an-all");
+      if (btnThreats && btnAll) {
+        if (mode === 'threats') {
+          btnThreats.classList.add("active");
+          btnThreats.style.background = "rgba(244,63,94,0.2)";
+          btnThreats.style.borderColor = "rgba(244,63,94,0.45)";
+          btnThreats.style.color = "var(--red)";
+          btnAll.classList.remove("active");
+          btnAll.style.background = "";
+          btnAll.style.borderColor = "";
+          btnAll.style.color = "";
+        } else {
+          btnAll.classList.add("active");
+          btnAll.style.background = "rgba(56,189,248,0.2)";
+          btnAll.style.borderColor = "rgba(56,189,248,0.45)";
+          btnAll.style.color = "var(--accent)";
+          btnThreats.classList.remove("active");
+          btnThreats.style.background = "";
+          btnThreats.style.borderColor = "";
+          btnThreats.style.color = "";
+        }
+      }
+      if (_lastAnalysisData) {
+        renderPlayResults(_lastAnalysisData);
+      }
+    }
 
-// ── File upload ───────────────────────────────────────────────────────────────
-async function uploadFile(input) {
-  const file = input.files[0];
-  if (!file) return;
-  const form = new FormData();
-  form.append('file', file);
-  const res = await fetch('/api/upload', { method: 'POST', body: form });
-  const data = await res.json();
-  if (data.error) { showToast('❌ ' + data.error); return; }
-  document.getElementById('log-input').value = data.content;
-  showToast(`📂 Loaded: ${data.filename} (${data.content.split('\n').length} lines)`);
-}
+    function isEventThreat(ev) {
+      if (!ev || ev.success === false) return false;
+      if (ev.is_threat === true) return true;
+      const act = String(ev.event_action || ev.action || "").toLowerCase();
+      const sev = String(ev.severity_label || ev.severity || "").toLowerCase();
+      const weak = String(ev.weak_label || "").toLowerCase();
+      const ml = String(ev.ml_prediction || "").toLowerCase();
+      const isSevThreat = ["critical", "high", "medium", "alert", "emergency", "warning", "warn"].includes(sev) ||
+                          (typeof ev.severity === "number" && ev.severity > 0 && ev.severity <= 4);
+      const isActThreat = ["deny", "block", "drop", "alert", "quarantine", "reject", "reset"].includes(act);
+      const isMlThreat = ["attack", "malicious", "threat"].includes(weak) || ["attack", "malicious", "threat"].includes(ml) || ev.is_malicious === true;
+      const hasMitre = Boolean(ev.mitre_technique_id);
+      const hasThreatIntel = Boolean(ev.threat_intel_score && Number(ev.threat_intel_score) >= 0.5);
+      const hasThreatName = Boolean(ev.threat_name && !["-", "none", "unknown", ""].includes(String(ev.threat_name).trim().toLowerCase()));
+      return isSevThreat || isActThreat || isMlThreat || hasMitre || hasThreatIntel || hasThreatName;
+    }
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
-function esc(str) {
-  return String(str)
-    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
-    .replace(/"/g,'&quot;');
-}
+    async function runAnalyzer() {
+      const text = document.getElementById("play-textarea").value.trim();
+      if (!text) {
+        showToast("Please paste log text or pick a preset sample first");
+        return;
+      }
 
-let toastTimer;
-function showToast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.classList.add('show');
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => t.classList.remove('show'), 3500);
-}
+      const btn = document.getElementById("btn-analyze");
+      btn.textContent = "⏳ Normalizing...";
+      btn.disabled = true;
 
-// Keyboard shortcut: Ctrl+Enter to run
-document.addEventListener('keydown', e => {
-  if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') process();
-});
+      try {
+        const res = await fetch("/api/process", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ lines: text, format: "auto" }),
+        });
+        const data = await res.json();
 
-// Init on load
-init();
-</script>
+        // Calculate threat counts
+        const allEvents = data.events || [];
+        const threatCount = data.stats.threats_count != null ? data.stats.threats_count : allEvents.filter(e => isEventThreat(e)).length;
+        const totalParsed = data.stats.parsed_ok || allEvents.length;
+        const benignCount = data.stats.benign_count != null ? data.stats.benign_count : (totalParsed - threatCount);
+        const formatName = (data.format_detected || data.dominant_format || "AUTO").toUpperCase();
+        const latencyMs = data.stats.elapsed_ms || 1;
+
+        // Update Top KPI Cards
+        document.getElementById("kpi-total").textContent = totalParsed.toLocaleString();
+        document.getElementById("kpi-threat").textContent = threatCount.toLocaleString();
+        document.getElementById("kpi-threat-pct").textContent = `${totalParsed > 0 ? ((threatCount / totalParsed) * 100).toFixed(0) : 0}% of scanned logs`;
+        document.getElementById("kpi-benign").textContent = benignCount.toLocaleString();
+        document.getElementById("kpi-benign-pct").textContent = `${totalParsed > 0 ? ((benignCount / totalParsed) * 100).toFixed(0) : 0}% of scanned logs`;
+        document.getElementById("kpi-format").textContent = formatName;
+        document.getElementById("kpi-latency").textContent = `${latencyMs} ms`;
+
+        // Update Detected Badge
+        document.getElementById("play-detected-badge").textContent = `FORMAT: ${formatName}`;
+
+        _lastAnalysisData = data;
+        renderPlayResults(data);
+
+        // Enable PDF export
+        const pdfBtn = document.getElementById("btn-pdf");
+        if (pdfBtn) { pdfBtn.disabled = false; }
+
+        showToast(`Normalized ${totalParsed} logs in ${latencyMs}ms — Isolated ${threatCount} threats!`);
+      } catch (err) {
+        showToast(`Analysis error: ${err.message}`);
+      } finally {
+        btn.textContent = "▶ Analyze Logs";
+        btn.disabled = false;
+      }
+    }
+
+    function renderPlayResults(data) {
+      const container = document.getElementById("play-results");
+      container.innerHTML = "";
+
+      const allEvents = data.events || [];
+      const threatsList = allEvents.filter(ev => isEventThreat(ev));
+      const totalParsed = data.stats.parsed_ok || allEvents.length;
+      const threatsCount = data.stats.threats_count != null ? data.stats.threats_count : threatsList.length;
+      const benignCount = data.stats.benign_count != null ? data.stats.benign_count : (totalParsed - threatsCount);
+      const parseErrors = data.stats.parse_errors || 0;
+
+      // Update toolbar counters
+      document.getElementById("badge-an-threats").textContent = `🛡️ ${threatsCount} Threats`;
+      document.getElementById("badge-an-benign").textContent = `✓ ${benignCount} Benign`;
+      document.getElementById("badge-an-total").textContent = `📊 ${totalParsed} Parsed`;
+
+      const errBadge = document.getElementById("badge-an-errors");
+      if (errBadge) {
+        if (parseErrors > 0) {
+          errBadge.style.display = "inline-block";
+          errBadge.textContent = `⚠️ ${parseErrors} Skipped (Noise)`;
+        } else {
+          errBadge.style.display = "none";
+        }
+      }
+
+      // Filter events to render based on active mode
+      let eventsToRender = [];
+      if (_analyzerFilter === 'threats') {
+        eventsToRender = threatsList;
+      } else {
+        eventsToRender = allEvents.filter(ev => ev.success !== false && (ev.format_name || "unknown") !== "unknown");
+      }
+
+      // Apply Search Filter if any text is typed
+      const searchQuery = (document.getElementById("search-threats")?.value || "").toLowerCase().trim();
+      if (searchQuery) {
+        eventsToRender = eventsToRender.filter(ev => {
+          const str = JSON.stringify(ev).toLowerCase();
+          return str.includes(searchQuery);
+        });
+      }
+
+      if (eventsToRender.length === 0) {
+        if (_analyzerFilter === 'threats') {
+          container.innerHTML = `
+            <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:260px; color:var(--text-dim); gap:0.6rem;">
+              <div style="font-size:2.8rem;">🛡️</div>
+              <div style="font-size:1rem; font-weight:700; color:var(--green);">Zero Threats Detected</div>
+              <div style="font-size:0.75rem; text-align:center; max-width:460px; line-height:1.4; color:var(--text-muted);">
+                All ${totalParsed} parsed logs passed security validation without triggering firewall denies, IDS signatures, or ML anomalies. Click "🌐 All Parsed" to inspect normal baseline network records.
+              </div>
+            </div>`;
+        } else {
+          container.innerHTML = `
+            <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:240px; color:var(--text-dim); gap:0.6rem;">
+              <div style="font-size:2.8rem;">📄</div>
+              <div style="font-size:0.95rem; font-weight:700; color:var(--text-muted);">No Matching Records Found</div>
+            </div>`;
+        }
+        return;
+      }
+
+      // Render cards with 100 limit for DOM responsiveness
+      const displayCount = Math.min(eventsToRender.length, 100);
+      if (eventsToRender.length > 100) {
+        const notice = document.createElement("div");
+        notice.style.cssText = "font-size:0.72rem; color:var(--yellow); background:rgba(245,158,11,0.1); border:1px solid rgba(245,158,11,0.25); border-radius:6px; padding:6px 12px; margin-bottom:8px; text-align:center;";
+        notice.textContent = `⚡ Showing top 100 of ${eventsToRender.length} threat records (full incident data preserved for PDF export).`;
+        container.appendChild(notice);
+      }
+
+      for (let idx = 0; idx < displayCount; idx++) {
+        const ev = eventsToRender[idx];
+        const isThreat = isEventThreat(ev);
+        const card = document.createElement("div");
+        card.className = "drawer-content";
+        card.style.margin = "0 0 10px 0";
+
+        if (isThreat) {
+          card.style.borderColor = "rgba(244,63,94,0.35)";
+          card.style.boxShadow = "0 0 16px rgba(244,63,94,0.08)";
+          card.style.borderLeft = "4px solid var(--red)";
+        }
+
+        // Priority keys first in UES grid
+        const priorityKeys = [
+          "event_uid", "record_hash", "format_name", "source_id", "timestamp",
+          "src_ip", "dst_ip", "src_port", "dst_port", "protocol",
+          "event_action", "severity_label", "threat_name", "mitre_technique_id", "mitre_technique_name",
+          "threat_intel_score", "is_malicious", "weak_label", "label_confidence", "user_agent"
+        ];
+
+        let fieldsGrid = '<div class="drawer-grid">';
+        priorityKeys.forEach(k => {
+          if (ev[k] !== undefined && ev[k] !== null && ev[k] !== "") {
+            fieldsGrid += `
+              <div class="drawer-item">
+                <div class="drawer-key">${esc(k)}</div>
+                <div class="drawer-val">${esc(String(ev[k]))}</div>
+              </div>`;
+          }
+        });
+
+        // Any other non-empty fields
+        Object.entries(ev).forEach(([k, v]) => {
+          if (priorityKeys.includes(k) || ["raw_log", "extra_fields", "success", "is_threat"].includes(k)) return;
+          if (v !== undefined && v !== null && v !== "") {
+            fieldsGrid += `
+              <div class="drawer-item">
+                <div class="drawer-key">${esc(k)}</div>
+                <div class="drawer-val">${esc(String(v))}</div>
+              </div>`;
+          }
+        });
+
+        // Extra vendor-specific fields
+        if (ev.extra_fields && Object.keys(ev.extra_fields).length > 0) {
+          Object.entries(ev.extra_fields).forEach(([k, v]) => {
+            fieldsGrid += `
+              <div class="drawer-item" style="border-color:rgba(129,140,248,0.3);">
+                <div class="drawer-key" style="color:var(--accent2);">extra.${esc(k)}</div>
+                <div class="drawer-val">${esc(String(v))}</div>
+              </div>`;
+          });
+        }
+        fieldsGrid += '</div>';
+
+        const threatBadge = isThreat
+          ? `<span class="pill-badge deny" style="font-size:0.65rem; font-weight:700;">🚨 THREAT DETECTED</span>`
+          : `<span class="pill-badge allow" style="font-size:0.65rem;">✓ BENIGN</span>`;
+
+        const mitreBadge = ev.mitre_technique_id
+          ? `<span class="pill-badge sev-high" style="font-size:0.62rem; margin-left:6px;" title="${esc(ev.mitre_technique_name || '')}">${esc(ev.mitre_technique_id)}</span>`
+          : '';
+
+        const sevBadge = ev.severity_label
+          ? `<span class="pill-badge sev-${String(ev.severity_label).toLowerCase().slice(0,4)}" style="font-size:0.62rem; margin-left:4px;">${esc(String(ev.severity_label).toUpperCase())}</span>`
+          : '';
+
+        let mlBadge = '';
+        if (ev.weak_label) {
+          const conf = ev.label_confidence ? ` (${(ev.label_confidence * 100).toFixed(0)}%)` : '';
+          if (ev.weak_label === 'attack') {
+            mlBadge = `<span class="pill-badge deny" style="font-size:0.62rem; margin-left:4px;">ML:ATTACK${conf}</span>`;
+          } else {
+            mlBadge = `<span class="pill-badge allow" style="font-size:0.62rem; margin-left:4px;">ML:BENIGN${conf}</span>`;
+          }
+        }
+
+        const raw = ev.raw_log || "";
+        card.innerHTML = `
+          <div style="font-size:0.75rem; font-weight:700; margin-bottom:0.65rem; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:4px;">
+            <div style="display:flex; gap:6px; align-items:center; flex-wrap:wrap;">
+              ${threatBadge}
+              <span style="color:var(--text);">#${idx + 1} — ${esc(ev.format_name || "UNKNOWN").toUpperCase()}</span>
+              ${sevBadge}
+              ${mitreBadge}
+              ${mlBadge}
+            </div>
+            <span style="color:var(--accent); font-size:0.72rem; font-family:'JetBrains Mono'; font-weight:600;">
+              ${esc(ev.src_ip || "-")} ➔ ${esc(ev.dst_ip || "-")}
+            </span>
+          </div>
+          ${fieldsGrid}
+          ${raw ? `
+            <div class="raw-box">
+              <button class="btn-copy" onclick="copyToClipboard('${esc(raw.replace(/'/g, "\\'"))}')">Copy Raw</button>
+              ${esc(raw)}
+            </div>
+          ` : ''}`;
+
+        container.appendChild(card);
+      }
+    }
+
+    function filterResultsBySearch() {
+      if (_lastAnalysisData) {
+        renderPlayResults(_lastAnalysisData);
+      }
+    }
+
+    // ── PDF Export: Threats Only, Zero Noise ───────────────
+    function downloadPDF() {
+      if (!_lastAnalysisData || !_lastAnalysisData.events || !_lastAnalysisData.events.length) {
+        showToast("No analysis results to export. Run Analyze Logs first.");
+        return;
+      }
+      try {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
+        const data = _lastAnalysisData;
+        const allEvents = data.events || [];
+        const pageW = doc.internal.pageSize.getWidth();
+        const pageH = doc.internal.pageSize.getHeight();
+        const margin = 14;
+        let y = margin;
+
+        // Filter out noise — export THREATS ONLY!
+        const allThreats = allEvents.filter(ev => isEventThreat(ev));
+        let exportEvents = allThreats;
+        let isThreatReport = true;
+
+        if (exportEvents.length === 0) {
+          // If no threats exist in entire dataset, export parsed valid logs as a Clean Baseline Audit
+          exportEvents = allEvents.filter(ev => ev.success !== false && ev.format_name && ev.format_name !== "unknown").slice(0, 50);
+          isThreatReport = false;
+        } else if (exportEvents.length > 100) {
+          exportEvents = exportEvents.slice(0, 100);
+        }
+
+        if (exportEvents.length === 0) {
+          showToast("No valid records to export.");
+          return;
+        }
+
+        // Top Header bar
+        doc.setFillColor(7, 11, 20);
+        doc.rect(0, 0, pageW, 22, "F");
+        doc.setTextColor(56, 189, 248);
+        doc.setFontSize(13);
+        doc.setFont("helvetica", "bold");
+        doc.text("ULPF \u2014 Security Threat Intelligence & Incident Report", margin, 10);
+        doc.setTextColor(148, 163, 184);
+        doc.setFontSize(8);
+        doc.setFont("helvetica", "normal");
+        doc.text("SECURITY AUDIT  |  Generated: " + new Date().toUTCString(), margin, 16.5);
+
+        if (isThreatReport) {
+          doc.setTextColor(244, 63, 94);
+          doc.setFontSize(8);
+          doc.setFont("helvetica", "bold");
+          doc.text("THREATS ISOLATED: " + allThreats.length + " (Zero Noise)", pageW - margin, 10, { align: "right" });
+        } else {
+          doc.setTextColor(16, 185, 129);
+          doc.setFontSize(8);
+          doc.setFont("helvetica", "bold");
+          doc.text("CLEAN PERIMETER (Zero Threats Detected)", pageW - margin, 10, { align: "right" });
+        }
+        doc.setTextColor(148, 163, 184);
+        doc.setFontSize(8);
+        doc.setFont("helvetica", "normal");
+        doc.text("SIH 2026 \u2014 Universal Log Pre-processing Framework", pageW - margin, 16.5, { align: "right" });
+        y = 28;
+
+        // Executive Summary Box
+        doc.setFillColor(14, 21, 38);
+        doc.roundedRect(margin, y, pageW - margin * 2, 18, 3, 3, "F");
+
+        const totalScanned = data.stats ? data.stats.total_lines : allEvents.length;
+        const noiseCount = totalScanned - allThreats.length;
+        const sumCols = [
+          ["Report Scope",    isThreatReport ? "THREATS ONLY" : "CLEAN AUDIT"],
+          ["Log Format",      (data.format_detected || "auto").toUpperCase()],
+          ["Total Scanned",   String(totalScanned)],
+          ["Threats Isolated",String(allThreats.length)],
+          ["Noise Excluded",  String(noiseCount)],
+          ["Threats in PDF",  String(exportEvents.length) + (allThreats.length > exportEvents.length ? " (Top 100)" : "")],
+        ];
+        const colW = (pageW - margin * 2) / sumCols.length;
+        sumCols.forEach(function([label, value], ci) {
+          const cx = margin + ci * colW + colW / 2;
+          doc.setTextColor(100, 116, 139);
+          doc.setFontSize(6.5);
+          doc.setFont("helvetica", "normal");
+          doc.text(label.toUpperCase(), cx, y + 5.5, { align: "center" });
+
+          if (ci === 0 && isThreatReport) doc.setTextColor(244, 63, 94);
+          else if (ci === 3 && allThreats.length > 0) doc.setTextColor(244, 63, 94);
+          else doc.setTextColor(241, 245, 249);
+
+          doc.setFontSize(9);
+          doc.setFont("helvetica", "bold");
+          doc.text(value, cx, y + 12.5, { align: "center" });
+        });
+        y += 24;
+
+        // Table Columns
+        const cols = [
+          { label: "#",            width: 10 },
+          { label: "Format",       width: 26 },
+          { label: "Timestamp",    width: 36 },
+          { label: "Attacker IP",  width: 30 },
+          { label: "Target IP",    width: 30 },
+          { label: "Action",       width: 20 },
+          { label: "Severity",     width: 22 },
+          { label: "Proto",        width: 16 },
+          { label: "Threat Details / MITRE", width: 52 },
+          { label: "User",         width: 26 },
+        ];
+        const rowH = 7;
+
+        function drawHeader(ty) {
+          doc.setFillColor(22, 32, 56);
+          doc.rect(margin, ty, pageW - margin * 2, rowH, "F");
+          let cx = margin + 2;
+          cols.forEach(function(col) {
+            doc.setTextColor(56, 189, 248);
+            doc.setFontSize(6.5);
+            doc.setFont("helvetica", "bold");
+            doc.text(col.label, cx, ty + 4.8);
+            cx += col.width;
+          });
+          return ty + rowH;
+        }
+
+        y = drawHeader(y);
+
+        const SEV_COLORS = {
+          critical: [244,63,94], high: [249,115,22], medium: [245,158,11],
+          low: [16,185,129], informational: [100,116,139], info: [100,116,139]
+        };
+
+        exportEvents.forEach(function(ev, idx) {
+          if (y + rowH > pageH - 14) {
+            doc.addPage(); y = margin; y = drawHeader(y);
+          }
+
+          let sevRaw = ev.severity_label || ev.severity;
+          let sev = "informational";
+          if (typeof sevRaw === "number") {
+            if (sevRaw <= 1) sev = "critical";
+            else if (sevRaw <= 3) sev = "high";
+            else if (sevRaw === 4) sev = "medium";
+            else if (sevRaw === 5) sev = "low";
+            else sev = "informational";
+          } else if (sevRaw != null) {
+            sev = String(sevRaw).toLowerCase();
+          }
+
+          const isHigh = ["critical","high","alert","emergency"].includes(sev);
+          const isMed  = ["medium","warn","warning"].includes(sev);
+          if (isHigh)         { doc.setFillColor(60,10,20);   doc.rect(margin, y, pageW - margin*2, rowH, "F"); }
+          else if (isMed)     { doc.setFillColor(50,35,10);   doc.rect(margin, y, pageW - margin*2, rowH, "F"); }
+          else if (idx%2===0) { doc.setFillColor(10,15,28);   doc.rect(margin, y, pageW - margin*2, rowH, "F"); }
+
+          const [sr,sg,sb] = SEV_COLORS[sev] || [244,63,94];
+          doc.setFillColor(sr,sg,sb); doc.rect(margin, y, 1.5, rowH, "F");
+
+          const threatLabel = ev.mitre_technique_id
+            ? `${ev.mitre_technique_id}: ${ev.threat_name || ev.event_name || 'Threat Detected'}`
+            : (ev.threat_name || ev.event_name || ev.message || 'Security Anomaly');
+
+          const vals = [
+            String(idx+1),
+            String(ev.format_name || "unknown").toUpperCase(),
+            String(ev.timestamp || ev.timestamp_raw || "LIVE"),
+            String(ev.src_ip    || ev.source_ip  || "-"),
+            String(ev.dst_ip    || ev.dest_ip    || "-"),
+            String(ev.event_action || ev.action  || "DENY").toUpperCase(),
+            String(sev).toUpperCase(),
+            String(ev.protocol  || "TCP").toUpperCase(),
+            String(threatLabel),
+            String(ev.username  || ev.user       || "-"),
+          ];
+
+          let cx = margin + 2;
+          vals.forEach(function(val, ci) {
+            const col = cols[ci];
+            const maxC = Math.floor(col.width / 1.75);
+            const txt  = String(val).length > maxC ? String(val).slice(0, maxC-1) + "\u2026" : String(val);
+
+            if (ci === 6)      { doc.setTextColor(sr,sg,sb);    doc.setFont("helvetica","bold"); }
+            else if (ci === 0) { doc.setTextColor(100,116,139); doc.setFont("helvetica","normal"); }
+            else if (isHigh)   { doc.setTextColor(252,165,165); doc.setFont("helvetica","normal"); }
+            else               { doc.setTextColor(200,210,225); doc.setFont("helvetica","normal"); }
+
+            doc.setFontSize(6.2);
+            doc.text(txt, cx, y + 4.8);
+            cx += col.width;
+          });
+
+          doc.setDrawColor(22,32,56); doc.setLineWidth(0.1);
+          doc.line(margin, y+rowH, pageW-margin, y+rowH);
+          y += rowH;
+        });
+
+        // Page Footers
+        const nPages = doc.internal.getNumberOfPages();
+        for (let p = 1; p <= nPages; p++) {
+          doc.setPage(p);
+          doc.setFillColor(7,11,20);
+          doc.rect(0, pageH-9, pageW, 9, "F");
+          doc.setTextColor(100,116,139); doc.setFontSize(6.5); doc.setFont("helvetica","normal");
+          doc.text("ULPF Security Threat Incident Report  |  Threats Only  |  Page " + p + " of " + nPages, margin, pageH-3);
+          doc.text("SIH 2026  |  Universal Log Pre-processing Framework", pageW-margin, pageH-3, { align:"right" });
+        }
+
+        const fname = "ULPF_ThreatReport_" + (data.dominant_format || data.format_detected || "auto") + "_" + Date.now() + ".pdf";
+        doc.save(fname);
+        showToast(`PDF exported: ${fname} (${exportEvents.length} threats)`);
+      } catch (err) {
+        showToast("PDF export error: " + err.message);
+        console.error("PDF export error:", err);
+      }
+    }
+
+    function uploadLogFile(input) {
+      const file = input.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        document.getElementById("play-textarea").value = e.target.result;
+        document.querySelectorAll(".btn-sample").forEach(btn => btn.classList.remove("active-preset"));
+        showToast(`Loaded file: ${file.name} (${e.target.result.split('\n').length} lines)`);
+        runAnalyzer();
+      };
+      reader.readAsText(file);
+    }
+
+    // ── Utilities ────────────────────────────────────────
+    function esc(s) {
+      return String(s || "")
+        .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+    }
+
+    function copyToClipboard(text) {
+      navigator.clipboard.writeText(text);
+      showToast("Copied to clipboard!");
+    }
+
+    let toastTimer;
+    function showToast(msg) {
+      const box = document.getElementById("toast-box");
+      box.textContent = msg;
+      box.classList.add("show");
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => box.classList.remove("show"), 3200);
+    }
+  </script>
 </body>
 </html>

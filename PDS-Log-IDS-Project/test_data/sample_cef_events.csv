@@ -1,0 +1,20 @@
+CEF:0|Cisco|ASA|9.14|106023|Deny TCP Traffic|7|src=198.51.100.55 spt=49210 dst=10.0.2.15 dpt=22 proto=TCP act=Deny msg=Inbound SSH blocked reason=access-group
+CEF:0|Palo Alto Networks|PAN-OS|10.1|threat|SQL Injection Detected|9|src=203.0.113.14 spt=51234 dst=172.16.0.10 dpt=80 proto=TCP act=drop msg=SQL injection pattern detected in POST body
+CEF:0|Snort|IDS|2.9.20|2001219|ET SCAN SSH Brute Force|8|src=198.51.100.77 spt=43210 dst=10.0.1.25 dpt=22 proto=TCP act=alert msg=Potential SSH brute force detected
+CEF:0|Cisco|ASA|9.14|106023|Deny TCP Traffic|5|src=185.220.101.47 spt=60234 dst=10.0.1.15 dpt=3389 proto=TCP act=Deny msg=Inbound RDP blocked from Tor exit node
+CEF:0|Palo Alto Networks|PAN-OS|10.1|threat|Apache Path Traversal|9|src=198.51.100.12 spt=54321 dst=10.0.0.45 dpt=80 proto=TCP act=alert msg=Path traversal attempt /etc/passwd detected
+CEF:0|Fortinet|FortiGate|7.2.1|0100026|forward|5|src=10.0.1.50 spt=55000 dst=8.8.8.8 dpt=53 proto=UDP act=accept msg=DNS query allowed
+CEF:0|CheckPoint|FireWall|R81.10|48|Log|3|src=203.0.113.99 spt=12345 dst=10.0.1.20 dpt=8080 proto=TCP act=drop msg=Outbound connection to suspicious IP blocked
+CEF:0|Cisco|ASA|9.14|106023|Deny UDP Traffic|4|src=203.0.113.88 spt=44321 dst=192.168.10.5 dpt=53 proto=UDP act=Deny msg=Inbound DNS amplification attempt blocked
+CEF:0|IBM|QRadar|7.5.0|5000|Network Policy Violation|7|src=185.220.101.20 spt=39801 dst=10.0.1.50 dpt=443 proto=TCP act=block msg=Known Tor exit relay blocked
+CEF:0|Palo Alto Networks|PAN-OS|10.1|threat|XSS Attack Detected|8|src=203.0.113.14 spt=53001 dst=10.0.0.50 dpt=443 proto=TCP act=drop msg=Cross-site scripting payload in query parameter
+CEF:0|Snort|IDS|2.9.20|2022028|ET EXPLOIT Apache Log4j RCE|10|src=198.51.100.99 spt=55555 dst=10.0.1.100 dpt=443 proto=TCP act=alert msg=Log4Shell exploitation attempt ${jndi:ldap://}
+CEF:0|Cisco|ASA|9.14|106100|Allow TCP Traffic|2|src=10.20.30.40 spt=50000 dst=10.0.0.10 dpt=443 proto=TCP act=permit msg=Internal traffic allowed to web server
+CEF:0|Fortinet|FortiGate|7.2.1|0100026|forward|2|src=192.168.1.100 spt=60000 dst=10.0.0.1 dpt=80 proto=TCP act=accept msg=Internal browsing allowed
+CEF:0|Palo Alto Networks|PAN-OS|10.1|threat|Command and Control Beacon|9|src=10.0.2.50 spt=45678 dst=198.51.100.200 dpt=4444 proto=TCP act=block msg=Potential C2 beaconing detected on non-standard port
+CEF:0|Cisco|ASA|9.14|106023|Deny TCP Traffic|6|src=198.51.100.44 spt=52100 dst=10.0.1.50 dpt=3306 proto=TCP act=Deny msg=Inbound MySQL port blocked from external source
+CEF:0|CheckPoint|FireWall|R81.10|48|Drop|4|src=185.220.101.47 spt=60300 dst=10.0.1.30 dpt=5432 proto=TCP act=drop msg=PostgreSQL port scan blocked
+CEF:0|IBM|QRadar|7.5.0|5001|Authentication Failure|7|src=198.51.100.77 spt=43300 dst=10.0.1.25 dpt=22 proto=TCP act=block msg=SSH authentication failure rate exceeded threshold
+CEF:0|Fortinet|FortiGate|7.2.1|0100026|forward|3|src=10.0.1.80 spt=35000 dst=216.58.200.110 dpt=443 proto=TCP act=accept msg=Google Workspace HTTPS traffic
+CEF:0|Palo Alto Networks|PAN-OS|10.1|threat|DNS Tunneling Detected|9|src=10.0.1.100 spt=54000 dst=198.51.100.50 dpt=53 proto=UDP act=block msg=Suspicious DNS tunnel pattern detected high entropy domain
+CEF:0|Cisco|ASA|9.14|106023|Deny ICMP|3|src=198.51.100.11 spt=0 dst=10.0.1.1 dpt=0 proto=ICMP act=Deny msg=ICMP ping sweep from external host blocked

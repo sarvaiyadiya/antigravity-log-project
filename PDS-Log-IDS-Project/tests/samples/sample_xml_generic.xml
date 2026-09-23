@@ -1,0 +1,2 @@
+<SecurityLog><Event EventID="1001" Severity="High" Action="Deny" Protocol="TCP" SrcIP="203.0.113.5" SrcPort="54321" DstIP="10.0.0.1" DstPort="22" Timestamp="2024-01-15T10:23:45Z" Username="root" Hostname="gateway01"/></SecurityLog>
+<FirewallEvent><Header Timestamp="2024-01-15T10:24:00Z" DeviceID="FW-001" Hostname="perimeter-fw"/><Network SrcIP="45.33.32.156" DstIP="192.168.1.10" SrcPort="12345" DstPort="443" Protocol="TCP" Action="block"/><Threat Severity="critical" Category="Intrusion" Message="Port scan detected from external host"/></FirewallEvent>

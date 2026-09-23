@@ -94,9 +94,17 @@ def validate_unified_event(event: UnifiedEvent) -> None:
     # 4. label_confidence range
     if event.label_confidence is not None:
         conf = event.label_confidence
-        if not isinstance(conf, float) or not (0.0 <= conf <= 1.0):
+        if not isinstance(conf, (int, float)) or not (0.0 <= conf <= 1.0):
             errors.append(
                 f"label_confidence {conf!r} is outside [0.0, 1.0]."
+            )
+
+    # 4b. threat_intel_score range
+    if event.threat_intel_score is not None:
+        tis = event.threat_intel_score
+        if not isinstance(tis, (int, float)) or not (0.0 <= tis <= 1.0):
+            errors.append(
+                f"threat_intel_score {tis!r} is outside [0.0, 1.0]."
             )
 
     # 5. Enum field types

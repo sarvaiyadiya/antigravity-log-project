@@ -1,0 +1,36 @@
+# Source Configuration: Windows Security Event Log
+# =============================================================================
+# Covers: Windows endpoints, domain controllers, Active Directory servers
+# PS requirement (e): Plug-and-play onboarding
+
+source_id: windows_event
+description: "Windows Security Event Log (XML format from WEF/Winlogbeat)"
+vendor: microsoft
+device_type: endpoint
+log_path: "data/raw/windows_security.xml"
+parser: windows_event_xml
+encoding: utf-8
+
+# FieldMapper mappings: parser field name → UES canonical field name
+field_map:
+  threat_signature_id: threat_signature_id
+  threat_name: threat_name
+  device_hostname: device_hostname
+  timestamp_raw: timestamp_raw
+  username: username
+  src_ip: src_ip
+  src_port: src_port
+  event_action: event_action
+  severity: severity
+  event_category: event_category
+  process_name: extra_process_name
+  command_line: extra_command_line
+  log_channel: extra_log_channel
+
+default_category: authentication
+default_action: unknown
+default_severity: informational
+
+# Output settings
+output_format: json-lines
+output_path: "outputs/normalized/windows_event.jsonl"

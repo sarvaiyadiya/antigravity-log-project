@@ -46,7 +46,14 @@ def detect_format(
     if not scores:
         return None
 
-    best_format = max(scores, key=lambda k: scores[k])
+    # Specific device/protocol parsers take precedence over generic delimiter fallbacks (csv, json, xml)
+    generic_parsers = {"csv", "json", "xml"}
+    specific_scores = {k: v for k, v in scores.items() if k not in generic_parsers}
+    if specific_scores:
+        best_format = max(specific_scores, key=lambda k: specific_scores[k])
+    else:
+        best_format = max(scores, key=lambda k: scores[k])
+
     return best_format
 
 

@@ -1,0 +1,57 @@
+# ULPF Contextual Enrichment Configuration
+# ==========================================
+# Configures offline GeoIP, Threat Intelligence, and MITRE ATT&CK mapping.
+
+enrichment:
+  enabled: true
+
+  # ── GeoIP & ASN Resolution ──────────────────────────────
+  geoip:
+    enabled: true
+    fallback_country: "GLOBAL"
+    rfc1918_label: "INTERNAL"
+    resolve_destination: true
+
+  # ── Threat Intelligence Reputation ──────────────────────
+  threat_intel:
+    enabled: true
+    malicious_threshold: 0.65
+    auto_adjust_weak_label: true
+    confidence_boost: 0.85
+    feeds:
+      - name: "tor_exit_nodes"
+        score: 0.95
+      - name: "emerging_threats_botnet"
+        score: 0.90
+      - name: "darklist_c2"
+        score: 0.98
+      - name: "shodan_masscan_scanners"
+        score: 0.75
+
+  # ── MITRE ATT&CK Framework Mapping ─────────────────────
+  mitre_attack:
+    enabled: true
+    default_firewall_action_mapping: true
+    matrix: "enterprise"
+    techniques:
+      - id: "T1190"
+        name: "Exploit Public-Facing Application"
+        tactic: "Initial Access"
+      - id: "T1110"
+        name: "Brute Force"
+        tactic: "Credential Access"
+      - id: "T1046"
+        name: "Network Service Discovery"
+        tactic: "Discovery"
+      - id: "T1059"
+        name: "Command and Scripting Interpreter"
+        tactic: "Execution"
+      - id: "T1071"
+        name: "Application Layer Protocol"
+        tactic: "Command and Control"
+      - id: "T1498"
+        name: "Network Denial of Service"
+        tactic: "Impact"
+      - id: "T1078"
+        name: "Valid Accounts"
+        tactic: "Privilege Escalation"

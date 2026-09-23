@@ -146,6 +146,19 @@ class UnifiedEvent:
     evidence_codes: str | None = None       # pipe-separated codes
     label_conflict: bool | None = None
 
+    # --- Contextual Enrichment (P4: GeoIP, Threat Intel, MITRE ATT&CK) ---
+    src_country: str | None = None          # ISO 2-letter country code ("US", "DE", "IN", etc.)
+    src_city: str | None = None             # City name
+    src_asn: str | None = None              # Autonomous System Number ("AS15169 Google LLC", etc.)
+    dst_country: str | None = None          # Destination country code
+    is_src_private: bool | None = None      # True if RFC 1918 private / loopback IP
+    threat_intel_score: float | None = None # 0.0 (clean) to 1.0 (confirmed malicious)
+    threat_intel_source: str | None = None  # Threat feed / blocklist identifier
+    is_malicious: bool | None = None        # True if flagged as malicious by threat intel
+    mitre_tactic: str | None = None         # MITRE ATT&CK tactic (e.g. "Initial Access")
+    mitre_technique_id: str | None = None   # MITRE ATT&CK technique ID (e.g. "T1190")
+    mitre_technique_name: str | None = None # MITRE ATT&CK technique name (e.g. "Exploit Public-Facing Application")
+
     # --- Source-specific overflow ---
     extra_fields: dict[str, Any] = field(default_factory=dict)
     # Any field the parser captures that has no canonical mapping goes here.

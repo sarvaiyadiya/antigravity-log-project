@@ -1,0 +1,29 @@
+# ULPF Sample Log File — Mixed Perimeter Firewall & IDS Events
+# Formats: Cisco ASA, RFC Syslog, Snort Alert, Palo Alto PAN-OS CSV
+# Use this file to test the ULPF Dashboard at http://localhost:7000
+
+<134>Jan 18 10:22:15 fw01 %ASA-3-106023: Deny tcp src outside:198.51.100.44/52100 dst inside:10.0.1.50/443 by access-group "outside_in" [0x0, 0x0]
+<134>Jan 18 10:22:16 fw01 %ASA-4-106023: Deny udp src outside:203.0.113.88/44321 dst dmz:192.168.10.5/53 by access-group "outside_in" [0x0, 0x0]
+<134>Jan 18 10:22:17 fw01 %ASA-3-106023: Deny tcp src outside:185.220.101.47/39812 dst inside:10.0.2.100/22 by access-group "outside_in" [0x0, 0x0]
+<134>Jan 18 10:22:18 fw01 %ASA-2-106001: Inbound TCP connection denied from 198.51.100.77/49301 to 10.0.1.25/3389 flags SYN on interface outside
+<134>Jan 18 10:22:19 fw01 %ASA-3-106023: Deny tcp src outside:203.0.113.55/60012 dst inside:10.0.1.80/8080 by access-group "outside_in" [0x0, 0x0]
+<134>Jan 18 10:22:20 fw01 %ASA-5-106100: access-list outside_in permitted tcp outside/198.51.100.10/44213 inside/10.0.0.5/80 hit-cnt 1 first hit [0x2c12, 0x0]
+<134>Jan 18 10:22:21 fw01 %ASA-3-106023: Deny tcp src outside:198.51.100.44/52101 dst inside:10.0.1.50/443 by access-group "outside_in" [0x0, 0x0]
+<134>Jan 18 10:22:22 fw01 %ASA-3-106023: Deny tcp src outside:198.51.100.44/52102 dst inside:10.0.1.50/8443 by access-group "outside_in" [0x0, 0x0]
+<134>Jan 18 10:22:23 fw01 %ASA-3-106023: Deny tcp src outside:198.51.100.44/52103 dst inside:10.0.1.50/21 by access-group "outside_in" [0x0, 0x0]
+<134>Jan 18 10:22:24 fw01 %ASA-3-106023: Deny tcp src outside:198.51.100.44/52104 dst inside:10.0.1.50/3306 by access-group "outside_in" [0x0, 0x0]
+01/18-10:22:25.123456  [**] [1:2001219:20] ET SCAN Potential SSH Brute Force Scan [**] [Classification: Attempted Information Leak] [Priority: 1] {TCP} 198.51.100.77:43210 -> 10.0.1.25:22
+01/18-10:22:25.654321  [**] [1:2019284:3] ET EXPLOIT Remote Code Execution Attempt [**] [Priority: 1] {TCP} 203.0.113.120:55432 -> 10.0.2.80:8080
+01/18-10:22:26.111222  [**] [1:2010935:2] ET SCAN Suspicious inbound to MSSQL port 1433 [**] [Classification: Potentially Bad Traffic] [Priority: 2] {TCP} 185.220.101.47:60234 -> 10.0.1.15:1433
+01/18-10:22:27.222333  [**] [1:2011716:6] ET SCAN Nmap Scripting Engine User-Agent Detected [**] [Classification: Web Application Attack] [Priority: 2] {TCP} 203.0.113.55:41234 -> 10.0.0.5:80
+01/18-10:22:28.333444  [**] [1:2022028:1] ET EXPLOIT Apache Log4j RCE Attempt [**] [Priority: 1] {TCP} 198.51.100.99:55555 -> 10.0.1.100:443
+<134>1 2024-01-18T10:22:30.000Z perimeter-gw sshd - - - Failed password for invalid user admin from 198.51.100.77 port 43211 ssh2
+<134>1 2024-01-18T10:22:31.000Z perimeter-gw sshd - - - Failed password for invalid user root from 198.51.100.77 port 43212 ssh2
+<134>1 2024-01-18T10:22:32.000Z perimeter-gw sshd - - - Failed password for invalid user oracle from 198.51.100.77 port 43213 ssh2
+<134>1 2024-01-18T10:22:33.000Z perimeter-gw firewall - - - src=203.0.113.99 dst=10.0.1.20 spt=12345 dpt=8080 proto=TCP action=DENY
+<134>1 2024-01-18T10:22:34.000Z perimeter-gw firewall - - - src=10.0.1.50 dst=8.8.8.8 spt=54321 dpt=53 proto=UDP action=ALLOW
+1,2024/01/18 10:22:35,001801000001,THREAT,vulnerability,2561,2024/01/18 10:22:35,198.51.100.12,10.0.0.45,0.0.0.0,0.0.0.0,rule-inbound,,,web-browsing,vsys1,untrust,trust,ethernet1/1,ethernet1/2,alert-syslog,2024/01/18 10:22:35,44123,1,54321,80,0,0,0x0,tcp,alert,"/etc/passwd",Apache Path Traversal(30012),any,critical,client-to-server,0,,0.0.0.0,United States
+1,2024/01/18 10:22:36,001801000001,THREAT,vulnerability,2561,2024/01/18 10:22:36,203.0.113.14,10.0.0.90,0.0.0.0,0.0.0.0,rule-inbound,,,web-browsing,vsys1,untrust,trust,ethernet1/1,ethernet1/2,alert-syslog,2024/01/18 10:22:36,55001,1,55001,443,0,0,0x0,tcp,drop,"union select",SQL Injection(40020),any,high,client-to-server,0,,0.0.0.0,China
+<134>Jan 18 10:22:40 fw01 %ASA-5-106100: access-list outside_in permitted tcp outside/10.20.30.40/50000 inside/10.0.0.10/443 hit-cnt 1 first hit [0x2c12, 0x0]
+<134>Jan 18 10:22:41 fw01 %ASA-5-106100: access-list outside_in permitted tcp outside/172.16.5.10/55000 inside/10.0.0.20/80 hit-cnt 1 first hit [0x2c12, 0x0]
+<134>Jan 18 10:22:42 fw01 %ASA-5-106100: access-list outside_in permitted udp outside/192.168.1.5/60000 dmz/192.168.10.1/53 hit-cnt 1 first hit [0x2c12, 0x0]

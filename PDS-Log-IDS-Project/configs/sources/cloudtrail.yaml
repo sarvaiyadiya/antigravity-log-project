@@ -1,0 +1,35 @@
+# Source Configuration: AWS CloudTrail
+# =============================================================================
+# Covers: AWS CloudTrail API call logs from any AWS region / account
+# Log format: {"Records": [...]} JSON — one file = many records
+# PS requirement (e): Plug-and-play onboarding
+
+source_id: aws_cloudtrail
+description: "AWS CloudTrail API call records (JSON format)"
+vendor: amazon_aws
+device_type: generic
+log_path: "data/raw/cloudtrail.json"
+parser: aws_cloudtrail
+encoding: utf-8
+
+# FieldMapper mappings
+field_map:
+  src_ip: src_ip
+  username: username
+  user_agent: user_agent
+  timestamp_raw: timestamp_raw
+  threat_signature_id: threat_signature_id
+  threat_name: threat_name
+  event_action: event_action
+  event_category: event_category
+  severity: severity
+  severity_label: severity_label
+  device_type: device_type
+
+default_category: authentication
+default_action: allow
+default_severity: informational
+
+# Output settings
+output_format: json-lines
+output_path: "outputs/normalized/cloudtrail.jsonl"

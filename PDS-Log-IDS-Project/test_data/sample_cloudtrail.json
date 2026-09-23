@@ -1,0 +1,173 @@
+{"Records": [
+  {
+    "eventVersion": "1.08",
+    "userIdentity": {
+      "type": "IAMUser",
+      "userName": "svc_attacker",
+      "arn": "arn:aws:iam::123456789012:user/svc_attacker",
+      "accountId": "123456789012"
+    },
+    "eventTime": "2024-01-18T10:22:15Z",
+    "eventSource": "iam.amazonaws.com",
+    "eventName": "CreateAccessKey",
+    "awsRegion": "us-east-1",
+    "sourceIPAddress": "198.51.100.110",
+    "userAgent": "aws-cli/2.9.1 Python/3.10.0 Linux/5.15.0",
+    "errorCode": "AccessDenied",
+    "errorMessage": "User: arn:aws:iam::123456789012:user/svc_attacker is not authorized to perform: iam:CreateAccessKey",
+    "requestParameters": null,
+    "responseElements": null
+  },
+  {
+    "eventVersion": "1.08",
+    "userIdentity": {
+      "type": "Root",
+      "userName": "root",
+      "arn": "arn:aws:iam::123456789012:root",
+      "accountId": "123456789012"
+    },
+    "eventTime": "2024-01-18T10:22:30Z",
+    "eventSource": "signin.amazonaws.com",
+    "eventName": "ConsoleLogin",
+    "awsRegion": "us-east-1",
+    "sourceIPAddress": "203.0.113.199",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/109.0",
+    "additionalEventData": {
+      "LoginTo": "https://console.aws.amazon.com/console/home",
+      "MobileVersion": "No",
+      "MFAUsed": "No"
+    },
+    "responseElements": {
+      "ConsoleLogin": "Success"
+    }
+  },
+  {
+    "eventVersion": "1.08",
+    "userIdentity": {
+      "type": "IAMUser",
+      "userName": "devops_ci",
+      "arn": "arn:aws:iam::123456789012:user/devops_ci",
+      "accountId": "123456789012"
+    },
+    "eventTime": "2024-01-18T10:23:00Z",
+    "eventSource": "ec2.amazonaws.com",
+    "eventName": "DescribeInstances",
+    "awsRegion": "us-east-1",
+    "sourceIPAddress": "10.0.1.50",
+    "userAgent": "aws-sdk-python/1.26.0",
+    "requestParameters": {
+      "maxResults": 100
+    },
+    "responseElements": null
+  },
+  {
+    "eventVersion": "1.08",
+    "userIdentity": {
+      "type": "IAMUser",
+      "userName": "svc_attacker",
+      "arn": "arn:aws:iam::123456789012:user/svc_attacker",
+      "accountId": "123456789012"
+    },
+    "eventTime": "2024-01-18T10:23:15Z",
+    "eventSource": "s3.amazonaws.com",
+    "eventName": "GetObject",
+    "awsRegion": "us-east-1",
+    "sourceIPAddress": "198.51.100.110",
+    "userAgent": "aws-cli/2.9.1 Python/3.10.0 Linux/5.15.0",
+    "errorCode": "AccessDenied",
+    "requestParameters": {
+      "bucketName": "prod-customer-data",
+      "key": "exports/all_customers.csv"
+    },
+    "responseElements": null
+  },
+  {
+    "eventVersion": "1.08",
+    "userIdentity": {
+      "type": "IAMUser",
+      "userName": "svc_attacker",
+      "arn": "arn:aws:iam::123456789012:user/svc_attacker",
+      "accountId": "123456789012"
+    },
+    "eventTime": "2024-01-18T10:23:30Z",
+    "eventSource": "iam.amazonaws.com",
+    "eventName": "AttachUserPolicy",
+    "awsRegion": "us-east-1",
+    "sourceIPAddress": "198.51.100.110",
+    "userAgent": "aws-cli/2.9.1 Python/3.10.0 Linux/5.15.0",
+    "errorCode": "AccessDenied",
+    "errorMessage": "User is not authorized to perform: iam:AttachUserPolicy on resource: arn:aws:iam::123456789012:user/svc_attacker",
+    "requestParameters": {
+      "userName": "svc_attacker",
+      "policyArn": "arn:aws:iam::aws:policy/AdministratorAccess"
+    },
+    "responseElements": null
+  },
+  {
+    "eventVersion": "1.08",
+    "userIdentity": {
+      "type": "IAMUser",
+      "userName": "developer01",
+      "arn": "arn:aws:iam::123456789012:user/developer01",
+      "accountId": "123456789012"
+    },
+    "eventTime": "2024-01-18T10:24:00Z",
+    "eventSource": "s3.amazonaws.com",
+    "eventName": "PutObject",
+    "awsRegion": "us-east-1",
+    "sourceIPAddress": "10.0.2.50",
+    "userAgent": "aws-sdk-java/2.19.0",
+    "requestParameters": {
+      "bucketName": "dev-artifacts",
+      "key": "builds/app-v1.2.3.zip"
+    },
+    "responseElements": {
+      "x-amz-version-id": "abc123"
+    }
+  },
+  {
+    "eventVersion": "1.08",
+    "userIdentity": {
+      "type": "IAMUser",
+      "userName": "svc_attacker",
+      "arn": "arn:aws:iam::123456789012:user/svc_attacker",
+      "accountId": "123456789012"
+    },
+    "eventTime": "2024-01-18T10:24:30Z",
+    "eventSource": "ec2.amazonaws.com",
+    "eventName": "AuthorizeSecurityGroupIngress",
+    "awsRegion": "us-east-1",
+    "sourceIPAddress": "198.51.100.110",
+    "userAgent": "aws-cli/2.9.1 Python/3.10.0 Linux/5.15.0",
+    "errorCode": "AccessDenied",
+    "requestParameters": {
+      "groupId": "sg-0abc123def",
+      "ipPermissions": [{"ipProtocol": "-1", "ipRanges": [{"cidrIp": "0.0.0.0/0"}]}]
+    },
+    "responseElements": null
+  },
+  {
+    "eventVersion": "1.08",
+    "userIdentity": {
+      "type": "IAMUser",
+      "userName": "admin_backup",
+      "arn": "arn:aws:iam::123456789012:user/admin_backup",
+      "accountId": "123456789012"
+    },
+    "eventTime": "2024-01-18T10:25:00Z",
+    "eventSource": "sts.amazonaws.com",
+    "eventName": "AssumeRole",
+    "awsRegion": "us-east-1",
+    "sourceIPAddress": "185.220.101.47",
+    "userAgent": "aws-cli/2.9.1",
+    "requestParameters": {
+      "roleArn": "arn:aws:iam::123456789012:role/AdministratorRole",
+      "roleSessionName": "admin-session"
+    },
+    "responseElements": {
+      "credentials": {
+        "accessKeyId": "ASIAIOSFODNN7EXAMPLE"
+      }
+    }
+  }
+]}
